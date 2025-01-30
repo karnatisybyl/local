@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/TransactionApi" name="TransactionApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression="json-eval($.Envelope.Body.CreateTransactionResponse)" name="requestJson" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('requestJson')" name="ExtractedSOAPResponse"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>$1</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('requestJson')"/>
+                </args>
+            </payloadFactory>
+            <property expression="json-eval($.FCUBS_RES_ENV.FCUBS_BODY.Transaction-Details.XREF)" name="XREF" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('XREF')" name="XREF"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

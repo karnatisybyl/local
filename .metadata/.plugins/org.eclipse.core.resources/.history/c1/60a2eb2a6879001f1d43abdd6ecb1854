@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/emailalerts" name="EmailAlerts" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="custom">
+                <property name="Start of API EMAIL" value="Begin Alerts EMAIL API processing"/>
+                <property expression="json-eval($)" name="Payload"/>
+            </log>
+            <!-- Enrich the message payload -->
+            <enrich>
+                <source clone="false" type="body"/>
+                <target property="PAYLOAD" type="property"/>
+            </enrich>
+            <!-- Log enriched payload -->
+            <log level="custom">
+                <property expression="get-property('PAYLOAD')" name="Enriched PAYLOAD"/>
+            </log>
+            <!-- Format the payload into JSON -->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "From": "$1",
+                        "RECEPIENT": "$2",
+                        "MESSAGE": "$3",
+                        "timestamp": "$4"
+                    }
+                </format>
+                <args>
+                    <arg evaluator="json" expression="get-property('From')"/>
+                    <arg evaluator="json" expression="get-property(RECEPIENT)"/>
+                    <arg evaluator="json" expression="get-property(MESSAGE)"/>
+                    <arg evaluator="json" expression="get-property(timestamp)"/>
+                </args>
+            </payloadFactory>
+            <!-- Log the formatted payload -->
+            <log level="full"/>
+            <!-- Cache implementation to check for duplicate requests -->
+            <cache collector="false" timeout="3560">
+                <onCacheHit>
+                    <property expression="$body//p1:text" name="cached_sms_request" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:p1="http://ws.apache.org/commons/ns/payload"/>
+                    <log>
+                        <property name="MAIL_FLOW" value="B/E Call"/>
+                        <property expression="get-property('cached_sms_request')" name="BODY" xmlns:ns="http://org.apache.synapse/xsd"/>
+                    </log>
+                    <payloadFactory media-type="text">
+                        <format>$1</format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('cached_sms_request')" xmlns:ns="http://org.apache.synapse/xsd"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="RESPONSE" scope="default" type="STRING" value="true"/>
+                    <payloadFactory media-type="json">
+                        <format>{ "status": "400", "message": "Duplicate email request detected" }</format>
+                        <args/>
+                    </payloadFactory>
+                    <!-- Log the cache hit -->
+                    <log level="custom">
+                        <property name="OnCacheHit" value="Duplicate entry detected"/>
+                    </log>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+                    <!-- Respond with the cached response -->
+                    <respond/>
+                </onCacheHit>
+                <protocol type="HTTP">
+                    <methods>*</methods>
+                    <headersToExcludeInHash/>
+                    <headersToIncludeInHash/>
+                    <responseCodes>.*</responseCodes>
+                    <enableCacheControl>false</enableCacheControl>
+                    <includeAgeHeader>false</includeAgeHeader>
+                    <hashGenerator>org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator</hashGenerator>
+                </protocol>
+                <implementation maxSize="1000"/>
+            </cache>
+            <!-- Log after cache check -->
+            <log level="full"/>
+            <!-- Set response property -->
+            <property name="RESPONSE" scope="default" type="STRING" value="true"/>
+            <!-- Collect the cache -->
+            <cache collector="true"/>
+            <!-- Log cached message -->
+            <log level="custom">
+                <property expression="$body//p1:text" name="Cached message" xmlns:ns="http://org.apache/synapse/xsd" xmlns:p1="http://ws.apache.org/commons/ns/payload"/>
+            </log>
+            <!-- Format the payload for SMTP -->
+            <payloadFactory media-type="json">
+                <format>$1</format>
+                <args>
+                    <arg evaluator="json" expression="$"/>
+                </args>
+            </payloadFactory>
+            <!-- Call the internal SMTP endpoint -->
+            <call>
+                <endpoint key="AlertsEmailMQ"/>
+            </call>
+            <!-- Log cached message -->
+            <log level="custom">
+                <property expression="$body//p1:text" name="Cached message"/>
+            </log>
+            <!-- Format success response -->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+					  "ResultCode": 0,
+					  "ResultDesc": "string",
+					  "Data": {
+                            "From": "$1",
+                            "Subject": "$2",
+                            "Recepient": "$3",
+                            "Message": "$4",                            
+                            "Reference": "$5",
+                            "Attachments": ["$6"]
+                            },
+					  "ResponseReference": "string"
+					}
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('From')"/>
+                    <arg evaluator="xml" expression="get-property('Subject')"/>
+                    <arg evaluator="xml" expression="get-property('Recepient')"/>
+                    <arg evaluator="xml" expression="get-property('Message')"/>
+                    <arg evaluator="xml" expression="get-property('Reference')"/>
+                    <arg evaluator="xml" expression="get-property('Attachments')"/>
+                </args>
+            </payloadFactory>
+            <!-- Send the response -->
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

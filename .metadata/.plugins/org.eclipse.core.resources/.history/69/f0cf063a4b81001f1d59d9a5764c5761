@@ -1,0 +1,27 @@
+package ipsl.signature;
+
+public class Mpesabtc {
+
+    public static void main(String[] args) {
+        // Test input: simulate the property 'fcubs_req_env' value
+        String fcubsReqEnv = "TestTransaction123";
+
+        // Generate the dynamic SOAP payload
+        String soapPayload = frameSOAPPayload(fcubsReqEnv);
+
+        // Print the generated SOAP payload for testing
+        System.out.println("Generated SOAP Payload: ");
+        System.out.println(soapPayload);
+    }
+
+    // Method to dynamically frame the SOAP payload based on input
+    private static String frameSOAPPayload(String fcubsReqEnv) {
+        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+               "xmlns:typ=\"http://types.ws.gw.fcubs.iflex.com\">" +
+               "   <soapenv:Header/>" +
+               "   <soapenv:Body>" +
+               "      <typ:CreateTransaction>" + fcubsReqEnv + "</typ:CreateTransaction>" +
+               "   </soapenv:Body>" +
+               "</soapenv:Envelope>";
+    }
+}

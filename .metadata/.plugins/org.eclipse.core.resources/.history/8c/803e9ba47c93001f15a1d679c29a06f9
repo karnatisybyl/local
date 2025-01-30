@@ -1,0 +1,111 @@
+package signature;
+
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.entity.StringEntity;
+import org.apache.synapse.MessageContext;
+import org.apache.synapse.mediators.AbstractMediator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+public class CDataMediator extends AbstractMediator {
+
+    public boolean mediate(MessageContext context) {
+        // Retrieve the client request property from the context
+        String clientRequest = (String) context.getProperty("request");
+
+        // Retrieve dynamic properties from the context
+        String spId = (String) context.getProperty("spId");
+        String spPassword = (String) context.getProperty("spPassword");
+        String serviceId = (String) context.getProperty("serviceId");
+        String timeStamp = (String) context.getProperty("timeStamp");
+        String backendUrl = (String) context.getProperty("backendUrl");
+        
+        InputStream inputStream;
+        try {
+            inputStream = new ByteArrayInputStream(clientRequest.getBytes("UTF-8"));
+            // Create a DocumentBuilderFactory
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+
+            // Create a DocumentBuilder
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // Parse the XML input stream
+            Document document = builder.parse(inputStream);
+
+            // Normalize the XML Structure
+            document.getDocumentElement().normalize();
+
+            // Extract the <request> tag
+            NodeList requestNodes = document.getElementsByTagNameNS("http://api-v1.gen.mm.vodafone.com/mminterface/request", "request");
+            String response = nodeToString(requestNodes.item(0));
+
+            // Define the response XML with dynamic content
+            String responseXml = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:req=\"http://api-v1.gen.mm.vodafone.com/mminterface/request\">"
+                    + "    <soapenv:Header xmlns:tns=\"http://www.huawei.com/schema/osg/common/v2_1\">"
+                    + "        <tns:RequestSOAPHeader>"
+                    + "            <tns:spId>" + spId + "</tns:spId>"
+                    + "            <tns:spPassword>" + spPassword + "</tns:spPassword>"
+                    + "            <tns:serviceId>" + serviceId + "</tns:serviceId>"
+                    + "            <tns:timeStamp>" + timeStamp + "</tns:timeStamp>"
+                    + "        </tns:RequestSOAPHeader>"
+                    + "    </soapenv:Header>"
+                    + "    <soapenv:Body>"
+                    + "        <req:RequestMsg><![CDATA[" + response + "]]></req:RequestMsg>"
+                    + "    </soapenv:Body>"
+                    + "</soapenv:Envelope>";
+
+            // Print the formatted response (optional)
+            System.out.println("Formatted Response XML:");
+            System.out.println(responseXml);
+            
+            // Set the response property
+            context.setProperty("response", responseXml);
+
+           
+
+        return true;
+    }
+
+    private static String nodeToString(Node node) {
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            // Remove XML declaration
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            DOMSource source = new DOMSource(node);
+            StringWriter writer = new StringWriter();
+            StreamResult result = new StreamResult(writer);
+            transformer.transform(source, result);
+            return writer.getBuffer().toString();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+}

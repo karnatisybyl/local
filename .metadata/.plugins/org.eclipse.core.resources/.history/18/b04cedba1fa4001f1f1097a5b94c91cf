@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/cdata" name="cdata" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression="$body//typ:CreateTransaction" name="fcubs_req_env" scope="default" type="STRING" xmlns:typ="http://types.ws.gw.fcubs.iflex.com"/>
+            <log level="custom">
+                <property expression="get-property('fcubs_req_env')" name="fcubs_req_env"/>
+            </log>
+            <payloadFactory media-type="xml" template-type="freemarker">
+                <format><![CDATA[]]></format>
+                <args/>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

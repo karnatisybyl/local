@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/test" name="test" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET">
+        <inSequence>
+            <!-- <property expression="fn:concat('mailto:', get-property('mailto'))" name="To" scope="default"/>
+         -->
+            <property expression="//to/text()" name="to" scope="default" type="STRING"/>
+            <property expression="fn:concat('mailto:', get-property('To'))" name="uri.var.To" scope="default" type="STRING"/>
+            <call>
+                <endpoint>
+                    <http method="get" uri-template="{uri.var.To}">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>1</progressionFactor>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="custom">
+                <property expression="get-property('ERROR_CODE')" name="ERROR CODE"/>
+                <property expression="get-property('ERROR_MESSAGE')" name="ERROR MESSAGE"/>
+            </log>
+        </faultSequence>
+    </resource>
+</api>

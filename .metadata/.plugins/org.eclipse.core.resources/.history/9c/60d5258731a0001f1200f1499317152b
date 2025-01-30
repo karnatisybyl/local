@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extracting relevant properties from the payload -->
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <!-- Logging the extracted properties -->
+            <log level="custom">
+                <property expression="get-property('CdtrNm')" name="CdtrNm"/>
+                <property expression="get-property('DbtrNm')" name="DbtrNm"/>
+                <property expression="get-property('InstdAmt')" name="InstdAmt"/>
+                <property expression="get-property('DbtrPhneNb')" name="DbtrPhneNb"/>
+                <property expression="get-property('CdtrPhneNb')" name="CdtrPhneNb"/>
+            </log>
+            <!-- Initialize the ValidationError property to "Validation Passed" -->
+            <property name="ValidationError" scope="default" type="STRING" value="Validation Passed"/>
+            <script language="js"><![CDATA[var log=mc.getServiceLog();
+                    function formatMobileNumber(mobileNumber) {
+                        mobileNumber = mobileNumber.trim();
+                        
+                        // Check if the number contains only digits
+                        if (!/^\d+$/.test(mobileNumber)) {
+                            return "Error: Mobile number must contain digits only.";
+                        }
+                        
+                        // Check if the number starts with valid prefixes
+                        if (mobileNumber.startsWith('254')) {
+                            if (mobileNumber.length != 12) {
+                                return "Error: invalid mobile number length with country code.";
+                            }
+                            return '+' + mobileNumber;
+                        }
+                        
+                        if (mobileNumber.startsWith('07') || mobileNumber.startsWith('01')) {
+                            mobileNumber = '254' + mobileNumber.substring(1);
+                        } else if (mobileNumber.startsWith('7') || mobileNumber.startsWith('1')) {
+                            mobileNumber = '254' + mobileNumber;
+                        } else {
+                            return "Error: Mobile number must start with '254', '07', '01', '7', or '1'.";
+                        }
+                        
+                        // Final length validation for formatted number
+                        if (mobileNumber.length !== 12) {
+                            return "Error: Invalid mobile number length.";
+                        }
+                        return '+' + mobileNumber;
+                    }
+
+                    var phone = formatMobileNumber(mc.getProperty("DbtrPhneNb"));
+                    mc.setProperty("FormattedPhoneNumber", phone.toString());
+
+                    var CdtrNm = mc.getProperty("CdtrNm");
+                    var DbtrNm = mc.getProperty("DbtrNm");
+                    var InstdAmt = mc.getProperty("InstdAmt");
+
+                    // Logging values to ensure they are being correctly captured
+                    log.info("CdtrNm: " + CdtrNm);
+                    log.info("DbtrNm: " + DbtrNm);
+                    log.info("InstdAmt: " + InstdAmt);
+                    log.info("Formatted Phone: " + phone);
+
+                    // Validate extracted values
+                    if (CdtrNm == null || CdtrNm.trim() == "") {
+                        mc.setProperty("ValidationError", "CdtrNm is null or empty.");
+                    }
+                    else if (DbtrNm == null || DbtrNm.trim() == "") {
+                        mc.setProperty("ValidationError", "DbtrNm is null or empty.");
+                    }
+                    else if (InstdAmt == null || InstdAmt.trim() == "" || isNaN(InstdAmt)) {
+                        mc.setProperty("ValidationError", "InstdAmt is not a valid number or is null/empty.");
+                    }
+                    else {
+                        mc.setProperty("ValidationError", "Validation Passed");
+                    }]]></script>
+            <!-- Logging the ValidationError -->
+            <log level="custom">
+                <property expression="get-property('ValidationError')" name="ValidationError"/>
+            </log>
+            <!-- Create a JSON response with the ValidationError -->
+            <payloadFactory media-type="json">
+                <format>
+                    { "status": "FAILED", "description": "$1" }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ValidationError')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

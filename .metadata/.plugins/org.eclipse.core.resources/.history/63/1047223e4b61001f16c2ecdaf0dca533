@@ -1,0 +1,93 @@
+package XMLSignatureTestProject;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.xml.security.Init;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.xml.sax.SAXException;
+
+public class TestSignature {
+
+    private static final String ENCODING = "UTF-8";
+    private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
+
+    // Load public key from a file
+    public static PublicKey loadPublicKey(String filePath) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.getDecoder().decode(keyBytes));
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    // Load private key from a file
+    public static PrivateKey loadPrivateKey(String filePath) throws Exception {
+        byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(keyBytes));
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(spec);
+    }
+
+    // Canonicalize XML string
+    public static String canonicalize(String xml) throws CanonicalizationException, InvalidCanonicalizerException, IOException, SAXException, ParserConfigurationException {
+        Canonicalizer canon = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+        byte[] canonXmlBytes = canon.canonicalize(xml.getBytes(ENCODING));
+        return new String(canonXmlBytes, ENCODING);
+    }
+
+    // Sign XML string
+    public static String sign(String xmlString, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+        Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
+        signature.initSign(privateKey);
+        signature.update(xmlString.getBytes(ENCODING));
+        byte[] signatureBytes = signature.sign();
+        return Base64.getEncoder().encodeToString(signatureBytes);
+    }
+
+    // Verify signature
+    public static boolean verify(String xmlString, String signatureString, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+        Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
+        signature.initVerify(publicKey);
+        signature.update(xmlString.getBytes(ENCODING));
+        byte[] signatureBytes = Base64.getDecoder().decode(signatureString);
+        return signature.verify(signatureBytes);
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Initialize XML Security
+            Init.init();
+
+            // Load keys
+            PublicKey publicKey = loadPublicKey("path/to/publicKey.pem");
+            PrivateKey privateKey = loadPrivateKey("path/to/privateKey.pem");
+
+            // Sample XML data
+            String xmlData = "<example>Data to be signed</example>";
+
+            // Canonicalize XML data
+            String canonicalXml = canonicalize(xmlData);
+
+            // Sign the XML data
+            String signature = sign(canonicalXml, privateKey);
+            System.out.println("Signature: " + signature);
+
+            // Verify the signature
+            boolean isVerified = verify(canonicalXml, signature, publicKey);
+            System.out.println("Signature Verified: " + isVerified);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

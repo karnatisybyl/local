@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/daraja/b2b" name="B2B" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="full">
+                <property name="daraja_B2B_API" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag" scope="default" type="STRING"/>
+            <sequence key="DarajaPAin001_SEQ"/>
+            <log level="custom">
+                <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag"/>
+            </log>
+            <filter xpath="$ctx:cbsFlag = 'RTGS'">
+                <then>
+                    <sequence key="DarajaCoreTransaction_SEQ"/>
+                    <log level="full">
+                        <property name="BEFOREEP" value="BEFOREEP"/>
+                    </log>
+                    <call>
+                        <endpoint key="darajaRT_EP"/>
+                    </call>
+                    <log level="full">
+                        <property name="AFTEREP" value="AFTEREP"/>
+                    </log>
+                </then>
+                <else>
+                    <call>
+                        <endpoint>
+                            <http method="get" uri-template="http://localhost:8290/daraja/oauth/token">
+                                <suspendOnFailure>
+                                    <initialDuration>1000</initialDuration>
+                                    <progressionFactor>2</progressionFactor>
+                                    <maximumDuration>60000</maximumDuration>
+                                </suspendOnFailure>
+                                <markForSuspension>
+                                    <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                                    <retryDelay>1000</retryDelay>
+                                </markForSuspension>
+                            </http>
+                        </endpoint>
+                    </call>
+                    <property expression="json-eval($.access_token)" name="access_token" scope="default" type="STRING"/>
+                    <property name="Bearer" scope="default" type="STRING" value="Bearer"/>
+                    <header expression="fn:concat(get-property('Bearer'),' ', get-property('access_token'))" name="Authorization" scope="transport"/>
+                    <log level="full">
+                        <property name="Bearer" value="Bearer"/>
+                        <property name="mpesa.initiator" value="testapi"/>
+                        <property name="mpesa.security.credential" value="Jj5pMgosk7T4cHvYWDsrnjWqP/l5u+xREtm+HrPy8YbdoX8uAAwh+J1b9nmL1W7fIZyqacVixqul3zji6r6431E3BRsXwwAUvEleb+nIjMq4pq1GpMaVLqtQ1MRZsskRPACkAWK9VG7MEOplOe4BUNMMQ9jnBlqsj+Ukc/06ujYwwixD+WmKGf5SiOHpighYXUJr+Wx8bTM93uauYewQIEyjFVOhOatu9go5T1CJXb/+WlwRujlfWckdFsJ0KYp6KYNHzvgyXIhwu/uLvXWuldV3RBxlP9CLXFmhvbX+GVHUq0lh9pWxd9+yNBxUkU8M/CaZ68RPQRAwxqm+NRj6+g=="/>
+                        <property name="mpesa.command.id" value="BusinessPayBill"/>
+                        <property name="mpesa.sender.type" value="4"/>
+                        <property name="mpesa.receiver.type" value="4"/>
+                        <property name="mpesa.party.a" value="600988"/>
+                        <property name="mpesa.party.b" value="600000"/>
+                        <property name="mpesa.account.ref" value="353353"/>
+                        <property name="mpesa.requester" value="254708374149"/>
+                        <property name="mpesa.queue.timeout.url" value="https://mydomain.com/b2b/queue/"/>
+                        <property name="mpesa.result.url" value="https://mydomain.com/b2b/result/"/>
+                        <property expression="json-eval($)" name="mpesa.response"/>
+                        <!-- Log the request -->
+                        <!-- Store response in property -->
+                        <!-- Handle the response -->
+                    </log>
+                </else>
+            </filter>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="DarajaFault_SEQ"/>
+        </faultSequence>
+    </resource>
+</api>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/emailvalidation" name="emailValidation" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/sendEmail">
+        <inSequence>
+            <!-- Step 1: Validate email addresses -->
+            <!-- Step 4: Proceed to send the email -->
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

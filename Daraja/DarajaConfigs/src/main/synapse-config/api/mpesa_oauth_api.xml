@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/daraja/oauth" name="mpesa_oauth_api" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" url-mapping="/token">
+        <inSequence>
+            <log level="full">
+                <property name="mpesa_oauth_api" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <property name="consumerKey" scope="default" type="STRING" value="Gjxv1jQFnGQ5dNwEq2EXFOd8UdS6Mdum1NBmUbU4E4kEqJDU"/>
+            <property name="consumerSecret" scope="default" type="STRING" value="6AJ1RXaqMYdciAodB8dPfXhJb4T3J5XbfLDUaojM27nlS2nuqovSAJYndYLw6pri"/>
+            <property expression="base64Encode(fn:concat(get-property('consumerKey'), ':', get-property('consumerSecret')))" name="concatIDs" scope="default" type="STRING"/>
+            <property name="Basic" scope="default" type="STRING" value="Basic"/>
+            <header expression="fn:concat(get-property('Basic'),' ', get-property('concatIDs'))" name="Authorization" scope="transport"/>
+            <call>
+                <endpoint key="TOKEN_EP"/>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="DarajaFault_SEQ"/>
+        </faultSequence>
+    </resource>
+</api>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="test" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/test.xml</file>
+    </artifact>
+    <artifact name="test_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/test_swagger.yaml</file>
+    </artifact>
+    <artifact name="test_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/test_metadata.yaml</file>
+    </artifact>
+    <artifact name="MpesaTransactionStatusAPI" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/MpesaTransactionStatusAPI.xml</file>
+    </artifact>
+    <artifact name="MpesaTransactionStatusAPI_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/MpesaTransactionStatusAPI_swagger.yaml</file>
+    </artifact>
+    <artifact name="MpesaTransactionStatusAPI_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/MpesaTransactionStatusAPI_metadata.yaml</file>
+    </artifact>
+    <artifact name="XSLTTransformation" groupId="com.example.local-entry" version="1.0.0" type="synapse/local-entry" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/local-entries/XSLTTransformation.xml</file>
+    </artifact>
+    <artifact name="btc" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/btc.xml</file>
+    </artifact>
+    <artifact name="btc_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/btc_swagger.yaml</file>
+    </artifact>
+    <artifact name="btc_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/btc_metadata.yaml</file>
+    </artifact>
+</artifacts>

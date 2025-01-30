@@ -1,0 +1,33 @@
+package ipsl.signature;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
+
+public class PasswordGenerator {
+    // Method to generate spPassword using SHA-256 and Base64 encoding
+    public static String generateSPPassword(String spId, String password, String timeStamp) throws Exception {
+        // Concatenate spId + password + timeStamp
+        String dataToHash = spId + password + timeStamp;
+        
+        // Generate SHA-256 hash
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dataToHash.getBytes(StandardCharsets.UTF_8));
+        
+        // Encode the hash using Base64
+        return Base64.getEncoder().encodeToString(hash);
+    }
+
+    public static void main(String[] args) {
+        try {
+            String spId = "107031"; // Example SPID
+            String password = "Safaricom123!!"; // Example password
+            String timeStamp = TimeStampGenerator.generateTimeStamp(); // Generate the current timestamp in UTC
+
+            String spPassword = generateSPPassword(spId, password, timeStamp);
+            System.out.println("Generated spPassword: " + spPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

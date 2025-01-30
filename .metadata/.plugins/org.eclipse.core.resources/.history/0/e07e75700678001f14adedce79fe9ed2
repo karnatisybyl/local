@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/epcall" name="epcall" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Caching logic -->
+            <cache collector="false" maxMessageSize="31457280" timeout="5">
+                <onCacheHit>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+                    <payloadFactory media-type="json">
+                        <format>{ "status": "400", "message": "Duplicate message request detected" }</format>
+                        <args/>
+                    </payloadFactory>
+                    <respond/>
+                </onCacheHit>
+                <protocol type="HTTP">
+                    <methods>*</methods>
+                    <headersToExcludeInHash>*</headersToExcludeInHash>
+                    <headersToIncludeInHash/>
+                    <responseCodes>.*</responseCodes>
+                    <enableCacheControl>false</enableCacheControl>
+                    <includeAgeHeader>false</includeAgeHeader>
+                    <hashGenerator>org.wso2.carbon.mediator.cache.digest.HttpRequestHashGenerator</hashGenerator>
+                </protocol>
+                <implementation maxSize="10000"/>
+            </cache>
+            <send/>
+        </inSequence>
+        <outSequence>
+            <cache collector="true"/>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="PayInstalment" xmlns="http://ws.apache.org/ns/synapse">
+    <address format="soap11" uri="http://tz-uat-app-fcr1.tz.af.absa.local:9080/services/services/LoansPaymentManagerSpi">
+        <suspendOnFailure>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </address>
+</endpoint>

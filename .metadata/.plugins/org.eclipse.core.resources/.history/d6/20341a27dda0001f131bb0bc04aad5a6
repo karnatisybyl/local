@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/cdata" name="cdata" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extract the CDATA content within the CreateTransaction element -->
+            <enrich>
+                <source clone="true" xmlns:typ="http://types.ws.gw.fcubs.iflex.com" xpath="//typ:CreateTransaction/text()"/>
+                <target type="body"/>
+            </enrich>
+            <!-- Now, access the FCUBS_REQ_ENV content -->
+            <property expression="//*[local-name()='FCUBS_REQ_ENV']" name="fcubs_req_env" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('fcubs_req_env')" name="fcubs_req_env"/>
+                <!-- Use get-property instead of $variable notation -->
+            </log>
+            <!-- Apply XSLT transformation on extracted FCUBS_REQ_ENV -->
+            <xslt key="XSLTTransformation"/>
+            <log level="full">
+                <property expression="get-property('body')" name="name"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

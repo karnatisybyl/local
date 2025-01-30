@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>DarajaConfigs</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>com.example</groupId>
+  <artifactId>DarajaConfigs_module</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>DarajaConfigs_module</name>
+  <description>DarajaConfigs_module</description>
+  <modules>
+    <module>api/mpesa_oauth_api</module>
+    <module>metadata/mpesa_oauth_api_swagger</module>
+    <module>metadata/mpesa_oauth_api_metadata</module>
+    <module>endpoints/TOKEN_EP</module>
+    <module>sequences/DarajaFault_SEQ</module>
+    <module>api/B2B</module>
+    <module>metadata/B2B_swagger</module>
+    <module>metadata/B2B_metadata</module>
+    <module>sequences/DarajaPAin001_SEQ</module>
+    <module>sequences/DarajaCoreTransaction_SEQ</module>
+    <module>endpoints/darajaRT_EP</module>
+    <module>endpoints/B2B_EP</module>
+    <module>sequences/customDBSequence</module>
+    <module>api/dbTestAPI</module>
+    <module>metadata/dbTestAPI_swagger</module>
+    <module>metadata/dbTestAPI_metadata</module>
+  </modules>
+</project>

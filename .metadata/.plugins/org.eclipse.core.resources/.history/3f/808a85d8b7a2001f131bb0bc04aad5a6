@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="Flex_Acc_Validation" onError="Fault_Sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <dblookup>
+        <connection>
+            <pool>
+                <dsName>flexValidate</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[select c.cust_ac_no as AccountNumber,record_stat,ac_desc AS AccountName,AC_OPEN_DATE,ac_stat_frozen from sttm_cust_account c where c.Cust_Ac_No=? and c.record_stat='O' AND c.auth_stat='A' AND c.ac_stat_frozen='N']]></sql>
+            <parameter expression="get-property('ACCOUNT_NUMBER')" type="VARCHAR"/>
+            <result column="AC_OPEN_DATE" name="AC_OPEN_DATE"/>
+            <result column="record_stat" name="record_stat"/>
+            <result column="ac_stat_frozen" name="ac_stat_frozen"/>
+            <result column="AccountName" name="ac_desc"/>
+            <result column="AccountNumber" name="AccountNumber"/>
+        </statement>
+    </dblookup>
+    <property expression="get-property('AccountNumber')" name="AccountNumber" scope="default" type="STRING"/>
+    <property expression="get-property('record_stat')" name="record_stat" scope="default" type="STRING"/>
+    <property expression="get-property('ac_desc')" name="ac_desc" scope="default" type="STRING"/>
+    <property expression="get-property('AC_OPEN_DATE')" name="AC_OPEN_DATE" scope="default" type="STRING"/>
+    <property expression="get-property('ac_stat_frozen')" name="ac_stat_frozen" scope="default" type="STRING"/>
+    <script language="js"><![CDATA[var log = mc.getServiceLog();
+var accountNumber = mc.getProperty("AccountNumber");
+var recordStat = mc.getProperty("record_stat");
+var accountName = mc.getProperty("ac_desc");
+var accountOpenDate = mc.getProperty("AC_OPEN_DATE");
+var accountFrozenStatus = mc.getProperty("ac_stat_frozen");
+
+if (!accountNumber || !recordStat || !accountName || !accountOpenDate || !accountFrozenStatus) {
+  mc.setProperty("PayBillDataId", 1);
+  mc.setProperty("ErrorMessage", "Account details not found.");
+} else if (accountNumber.charAt(0) == '0') {
+  mc.setProperty("PayBillDataId", 1);
+  mc.setProperty("ErrorMessage", "Invalid account number (starts with 0).");
+} else if (recordStat == "O" && accountFrozenStatus !== "F") {
+  mc.setProperty("PayBillDataId", 0);
+  log.info("Record Status in script: " + recordStat);
+  mc.setProperty("ErrorMessage", "Record status is okay, kindly proceed");
+} else {
+  mc.setProperty("PayBillDataId", 1);
+  mc.setProperty("ErrorMessage", "Kindly have the CIF record approved on flex before proceeding!");
+}
+
+
+log.info("Account Number in script: " + accountNumber);
+log.info("Record Status in script final: " + recordStat);
+log.info("Account Name in script: " + accountName);
+log.info("Open Date in script: " + accountOpenDate);
+log.info("Frozen Status in script: " + accountFrozenStatus);
+
+mc.setProperty("Account Number", accountNumber);
+mc.setProperty("Record Status", recordStat);
+mc.setProperty("Account Name", accountName);
+mc.setProperty("Open Date", accountOpenDate);
+mc.setProperty("Frozen Status", accountFrozenStatus);]]></script>
+</sequence>

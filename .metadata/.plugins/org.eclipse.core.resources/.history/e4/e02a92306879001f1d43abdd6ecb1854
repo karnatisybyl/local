@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/duplicateCheckApi" name="duplicateCheckApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="custom">
+                <property name="duplicateCheckApi" value="##########StartedduplicateCheckApi"/>
+                <property expression="json-eval($)" name="duplicateCheckApiRequest"/>
+            </log>
+            <property expression="json-eval($.From)" name="From" scope="default" type="STRING"/>
+            <property expression="json-eval($.Recepient)" name="Recepient" scope="default" type="STRING"/>
+            <property expression="json-eval($.Message)" name="Message" scope="default" type="STRING"/>
+            <property expression="json-eval($.TimeStamp)" name="TimeStamp" scope="default" type="STRING"/>
+            <payloadFactory description="cache-response" media-type="json">
+                <format>{
+								    "Fromd": "$1",
+								     "Recepientd": "$2",
+								     "Messaged":"$3",
+								     "TimeStampd":"$4"
+								 
+								}</format>
+                <args>
+                    <arg evaluator="json" expression="$ctx:From"/>
+                    <arg evaluator="json" expression="$ctx:Recepient"/>
+                    <arg evaluator="json" expression="$ctx:Message"/>
+                    <arg evaluator="json" expression="$ctx:TimeStamp"/>
+                </args>
+            </payloadFactory>
+            <log level="custom">
+                <property name="duplicateCheckApi" value="##########EndedduplicateCheckApi"/>
+                <property expression="json-eval($)" name="afterpayload"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

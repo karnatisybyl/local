@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="mpesa_oauth_api" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/mpesa_oauth_api.xml</file>
+    </artifact>
+    <artifact name="mpesa_oauth_api_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/mpesa_oauth_api_swagger.yaml</file>
+    </artifact>
+    <artifact name="mpesa_oauth_api_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/mpesa_oauth_api_metadata.yaml</file>
+    </artifact>
+    <artifact name="TOKEN_EP" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/TOKEN_EP.xml</file>
+    </artifact>
+    <artifact name="DarajaFault_SEQ" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/DarajaFault_SEQ.xml</file>
+    </artifact>
+    <artifact name="B2B" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/B2B.xml</file>
+    </artifact>
+    <artifact name="B2B_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/B2B_swagger.yaml</file>
+    </artifact>
+    <artifact name="B2B_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/B2B_metadata.yaml</file>
+    </artifact>
+    <artifact name="DarajaPAin001_SEQ" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/DarajaPAin001_SEQ.xml</file>
+    </artifact>
+    <artifact name="DarajaCoreTransaction_SEQ" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/DarajaCoreTransaction_SEQ.xml</file>
+    </artifact>
+    <artifact name="darajaRT_EP" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/darajaRT_EP.xml</file>
+    </artifact>
+    <artifact name="B2B_EP" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/B2B_EP.xml</file>
+    </artifact>
+    <artifact name="customDBSequence" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/customDBSequence.xml</file>
+    </artifact>
+    <artifact name="dbTestAPI" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/dbTestAPI.xml</file>
+    </artifact>
+    <artifact name="dbTestAPI_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/dbTestAPI_swagger.yaml</file>
+    </artifact>
+    <artifact name="dbTestAPI_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/dbTestAPI_metadata.yaml</file>
+    </artifact>
+</artifacts>

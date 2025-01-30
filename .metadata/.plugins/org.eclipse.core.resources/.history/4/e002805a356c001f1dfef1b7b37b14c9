@@ -1,0 +1,34 @@
+package XMLSignatureTestProject;
+
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.cert.CertificateException;
+
+public class KeyStoreService {
+
+    private KeyStore keystore;
+    private String alias;
+    private String keyPassword;
+
+    public KeyStoreService(String keystorePath, String keystorePassword, String alias, String keyPassword)
+            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+        this.keystore = KeyStore.getInstance("JKS");
+        this.keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+        this.alias = alias;
+        this.keyPassword = keyPassword;
+    }
+
+    public PrivateKey getPrivateKey() throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        return (PrivateKey) keystore.getKey(alias, keyPassword.toCharArray());
+    }
+
+    public X509Certificate getCertificate() throws KeyStoreException {
+        return (X509Certificate) keystore.getCertificate(alias);
+    }
+}

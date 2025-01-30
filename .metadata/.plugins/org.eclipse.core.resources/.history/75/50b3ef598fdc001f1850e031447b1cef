@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/daraja/b2b" name="B2B" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET">
+        <inSequence>
+            <log level="full">
+                <property name="daraja_B2B_API" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="DarajaFault_SEQ"/>
+        </faultSequence>
+    </resource>
+</api>

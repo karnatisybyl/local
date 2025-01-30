@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>SignatureConfigs</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>com.example</groupId>
+  <artifactId>SignatureConfigs_module</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>SignatureConfigs_module</name>
+  <description>SignatureConfigs_module</description>
+  <modules>
+    <module>api/test</module>
+    <module>metadata/test_swagger</module>
+    <module>metadata/test_metadata</module>
+    <module>api/MpesaTransactionStatusAPI</module>
+    <module>metadata/MpesaTransactionStatusAPI_swagger</module>
+    <module>metadata/MpesaTransactionStatusAPI_metadata</module>
+    <module>local-entries/XSLTTransformation</module>
+    <module>proxy-services/btc</module>
+    <module>metadata/btc_proxy_metadata</module>
+    <module>api/retrieveCardsbyAccountNo</module>
+    <module>metadata/retrieveCardsbyAccountNo_swagger</module>
+    <module>metadata/retrieveCardsbyAccountNo_metadata</module>
+    <module>api/cdata</module>
+    <module>metadata/cdata_swagger</module>
+    <module>metadata/cdata_metadata</module>
+    <module>api/validationApi</module>
+    <module>metadata/validationApi_swagger</module>
+    <module>metadata/validationApi_metadata</module>
+  </modules>
+</project>

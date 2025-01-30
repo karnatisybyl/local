@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression=" //*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression=" //*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression=" //*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm"/>
+                <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm"/>
+                <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt"/>
+                <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb"/>
+                <property expression=" //*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb"/>
+            </log>
+            <script language="js"><![CDATA[var inputNumber = mc.getProperty('DbtrPhneNb');
+var cdtrNm = mc.getProperty('CdtrNm');
+var dbtrNm = mc.getProperty('DbtrNm');
+var instdAmt = mc.getProperty('InstdAmt');
+
+// Phone number validation
+if (inputNumber == null || inputNumber.trim() === '') {
+    mc.setProperty('ValidationError', 'Phone number is null or empty');
+} else {
+    // Remove any spaces or special characters
+    inputNumber = inputNumber.replace(/[^0-9+]/g, '');
+
+    // Check length and format
+    if ((inputNumber.length >= 10 && inputNumber.length <= 13) &&
+        (inputNumber.startsWith('+254') || inputNumber.startsWith('254') || inputNumber.length === 10)) {
+        mc.setProperty('validatedPhoneNumber', inputNumber);
+    } else {
+        mc.setProperty('ValidationError', 'Invalid phone number length or format');
+    }
+}
+
+// Validation functions
+function isNonEmpty(value) {
+    return value != null && value.trim() !== '';
+}
+
+function isValidNumber(value) {
+    return !isNaN(value) && isFinite(value);
+}
+
+// Validate CdtrNm
+if (!isNonEmpty(cdtrNm)) {
+    mc.setProperty('ValidationError', 'CdtrNm is null or empty');
+} else {
+    mc.setProperty('CdtrNm', cdtrNm);
+}
+
+// Validate DbtrNm
+if (!isNonEmpty(dbtrNm)) {
+    mc.setProperty('ValidationError', 'DbtrNm is null or empty');
+} else {
+    mc.setProperty('DbtrNm', dbtrNm);
+}
+
+// Validate InstdAmt
+if (!isNonEmpty(instdAmt) || !isValidNumber(instdAmt)) {
+    mc.setProperty('ValidationError', 'InstdAmt is null, empty, or not a valid number');
+} else {
+    mc.setProperty('InstdAmt', instdAmt);
+}]]></script>
+            <property expression="ValidationError" name="validation" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="ValidationError" name="validation"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="DynamicIPSLEPS" xmlns="http://ws.apache.org/ns/synapse">
+    <sequence>
+        <call>
+            <endpoint name="verification-report_EP">
+                <address format="soap11" uri="https://ips.api.ipsl.com/iso20022/v1/verification-report">
+                    <suspendOnFailure>
+                        <initialDuration>-1</initialDuration>
+                        <progressionFactor>1.0</progressionFactor>
+                    </suspendOnFailure>
+                    <markForSuspension>
+                        <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                    </markForSuspension>
+                </address>
+            </endpoint>
+        </call>
+    </sequence>
+</template>

@@ -1,0 +1,215 @@
+package XMLSignatureTestProject;
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.crypto.dsig.DigestMethod;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureMethod;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
+import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+public class Dsign {
+
+	protected static String typAlgorithm = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
+	protected static String canAlgorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+	protected static String digAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+	protected static String sigAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+
+	protected static boolean omitDec = true;
+	protected static boolean indent = false;
+
+	public static String generateSignature(String rawXml, String keystorePath, String keystorePws) {
+
+		return "";
+	}
+
+	public static KeyStore loadKeyStore(String keystoreFile, String keystorePass) throws Exception {
+		KeyStore keyStore = null;
+
+		if (keystoreFile == null || keystoreFile.length() == 0) {
+			return keyStore;
+		}
+
+		System.out.println(keystoreFile);
+		InputStream is = openResource(keystoreFile);
+		if (is == null) {
+			System.out.println("null ks");
+			return keyStore;
+		}
+
+		if (keystorePass == null)
+			keystorePass = "";
+
+		if (keystoreFile.endsWith(".p12")) {
+			keyStore = KeyStore.getInstance("PKCS12", "BC");
+		} else {
+			keyStore = KeyStore.getInstance("JKS");
+		}
+		keyStore.load(is, keystorePass.toCharArray());
+
+		return keyStore;
+	}
+
+	public static InputStream openResource(String fileName) throws Exception {
+		if (fileName == null || fileName.length() == 0) {
+			return null;
+		}
+		if (fileName.startsWith("/") || fileName.indexOf(':') > 0) {
+			return new FileInputStream(fileName);
+		}
+		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);
+		if (url == null)
+			return null;
+		return url.openStream();
+	}
+
+	public static PrivateKey loadPrivateKey(String keystoreAlias, KeyStore keyStore, String keystorePass)
+			throws Exception {
+
+		PrivateKey privateKey = null;
+
+		Key aliasKey = keyStore.getKey(keystoreAlias, keystorePass.toCharArray());
+		if (aliasKey instanceof PrivateKey) {
+			privateKey = (PrivateKey) aliasKey;
+		}
+
+		return privateKey;
+
+	}
+
+	public static Certificate loadCertificate(String keystoreAlias, KeyStore keyStore, String keystorePass)
+			throws Exception {
+		Certificate certificate = null;
+
+		Certificate aliasCertificate = keyStore.getCertificate(keystoreAlias);
+
+		if (aliasCertificate instanceof X509Certificate) {
+			certificate = (X509Certificate) aliasCertificate;
+		}
+
+		return certificate;
+	}
+
+	public static String sign(String content, String keystoreFile, String keystorePass, String keystoreAlias)
+			throws Exception {
+
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		// BASIL ADDED BELOW
+		documentBuilderFactory.setNamespaceAware(true);
+
+		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		Document document = documentBuilder.parse(new ByteArrayInputStream(content.getBytes()));
+
+		KeyStore ks = loadKeyStore(keystoreFile, keystorePass);
+
+		XMLSignature xmlSignature = createXMLSignature(document, ks, keystorePass, keystoreAlias);
+
+		Element rootNode = document.getDocumentElement();
+
+		DOMSignContext domSignContext = new DOMSignContext(loadPrivateKey(keystoreAlias, ks, keystorePass), rootNode);
+		// BASIL ADDED BELOW
+		domSignContext.setDefaultNamespacePrefix("ds");
+		xmlSignature.sign(domSignContext);
+
+		return nodeToString(rootNode);
+	}
+
+	public static String nodeToString(Node node) throws Exception {
+		StringWriter stringWriter = new StringWriter();
+		try {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitDec ? "yes" : "no");
+			transformer.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+			transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		return stringWriter.toString();
+	}
+
+	public static XMLSignature createXMLSignature(Document document, KeyStore ks, String keystorePass,
+			String keystoreAlias) throws Exception {
+
+		XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM",
+				new org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI());
+		CanonicalizationMethod c14nMethod = xmlSignatureFactory.newCanonicalizationMethod(canAlgorithm,
+				(C14NMethodParameterSpec) null);
+		DigestMethod digestMethod = xmlSignatureFactory.newDigestMethod(digAlgorithm, null);
+		SignatureMethod signMethod = xmlSignatureFactory.newSignatureMethod(sigAlgorithm, null);
+		Transform sigTransform = xmlSignatureFactory.newTransform(typAlgorithm, (TransformParameterSpec) null);
+		Transform canTransform = xmlSignatureFactory.newTransform(canAlgorithm, (TransformParameterSpec) null);
+
+		List<Transform> transforms = new ArrayList<Transform>();
+		transforms.add(sigTransform);
+		transforms.add(canTransform);
+
+		String UNIQUE_GUID = UUID.randomUUID().toString();
+		String sQualifyingPropertiesId = "_" + UNIQUE_GUID;
+
+		Reference referenceDoc = xmlSignatureFactory.newReference("", digestMethod, transforms, null, null);
+		Reference referenceQuP = xmlSignatureFactory.newReference("#" + sQualifyingPropertiesId,
+				xmlSignatureFactory.newDigestMethod(digAlgorithm, null));
+
+		List<Reference> references = new ArrayList<Reference>();
+		references.add(referenceDoc);
+		references.add(referenceQuP);
+
+		SignedInfo signedInfo = xmlSignatureFactory.newSignedInfo(c14nMethod, signMethod, references);
+
+		KeyInfoFactory keyInfoFactory = xmlSignatureFactory.getKeyInfoFactory();
+		X509Data x509Data = keyInfoFactory
+				.newX509Data(Collections.singletonList(loadCertificate(keystoreAlias, ks, keystorePass)));
+		KeyInfo keyInfo = null;
+		keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data), sQualifyingPropertiesId);
+
+		return xmlSignatureFactory.newXMLSignature(signedInfo, keyInfo, null, "_" + UUID.randomUUID(), null);
+	}
+
+	public static void main(String[] args) throws Exception {
+		String xmlStringRaw = "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.002.001.11\">    <FIToFIPmtStsRpt>        <GrpHdr>            <MsgId>string</MsgId>            <CreDtTm>2021-04-22T11:37:18.277Z</CreDtTm>            <InstgAgt>                <FinInstnId>                    <Othr>                        <Id>2031</Id>                    </Othr>                </FinInstnId>            </InstgAgt>            <InstdAgt>                <FinInstnId>                    <Othr>                        <Id>2031</Id>                    </Othr>                </FinInstnId>            </InstdAgt>        </GrpHdr>        <OrgnlGrpInfAndSts>            <OrgnlMsgId>string</OrgnlMsgId>            <OrgnlMsgNmId>pain.001</OrgnlMsgNmId>            <OrgnlCreDtTm>2021-04-22T11:37:16.234Z</OrgnlCreDtTm>        </OrgnlGrpInfAndSts>        <TxInfAndSts>            <StsId>string</StsId>            <OrgnlEndToEndId>2031203220210120095543e10b05af</OrgnlEndToEndId>            <TxSts>ACCP</TxSts>            <StsRsnInf>                <Orgtr>                    <Nm>string</Nm>                </Orgtr>                <Rsn>                    <Cd>AB06</Cd>                </Rsn>            </StsRsnInf>            <AccptncDtTm>2021-04-22T11:37:16.432Z</AccptncDtTm>            <OrgnlTxRef>                <IntrBkSttlmAmt Ccy=\"KES\">100</IntrBkSttlmAmt>                <ReqdExctnDt>                    <DtTm>2021-04-22T11:37:16.123Z</DtTm>                </ReqdExctnDt>                <SttlmInf>                    <SttlmMtd>CLRG</SttlmMtd>                    <ClrSys>                        <Prtry>IPS</Prtry>                    </ClrSys>                </SttlmInf>                <PmtTpInf>                    <SvcLvl>                        <Prtry>P2PT</Prtry>                    </SvcLvl>                    <LclInstrm>                        <Cd>INST</Cd>                    </LclInstrm>                    <CtgyPurp>                        <Prtry>IBNK</Prtry>                    </CtgyPurp>                </PmtTpInf>                <MndtRltdInf>                    <CdtTrfMndt>                        <MndtId>string</MndtId>                    </CdtTrfMndt>                </MndtRltdInf>                <RmtInf>                    <Ustrd>string</Ustrd>                    <Strd>                        <TaxRmt>                            <RefNb>string</RefNb>                        </TaxRmt>                    </Strd>                </RmtInf>                <UltmtDbtr>                    <Pty>                        <Nm>string</Nm>                        <Id>                            <OrgId>                                <Othr>                                    <Id>2031</Id>                                </Othr>                            </OrgId>                        </Id>                        <CtctDtls>                            <PhneNb>+412-4314875-10</PhneNb>                        </CtctDtls>                    </Pty>                </UltmtDbtr>                <Dbtr>                    <Pty>                        <Nm>string</Nm>                        <Id>                            <OrgId>                                <Othr>                                    <Id>2031</Id>                                </Othr>                            </OrgId>                        </Id>                        <CtctDtls>                            <PhneNb>+98-1+109741-4(70)7</PhneNb>                        </CtctDtls>                    </Pty>                </Dbtr>                <DbtrAcct>                    <Id>                        <Othr>                            <Id>string</Id>                            <SchmeNm>                                <Prtry>PHNE</Prtry>                            </SchmeNm>                        </Othr>                    </Id>                    <Nm>string</Nm>                </DbtrAcct>                <DbtrAgt>                    <FinInstnId>                        <Othr>                            <Id>2031</Id>                        </Othr>                    </FinInstnId>                </DbtrAgt>                <CdtrAgt>                    <FinInstnId>                        <Othr>                            <Id>2031</Id>                        </Othr>                    </FinInstnId>                </CdtrAgt>                <Cdtr>                    <Pty>                        <Nm>string</Nm>                        <Id>                            <OrgId>                                <Othr>                                    <Id>2031</Id>                                </Othr>                            </OrgId>                        </Id>                        <CtctDtls>                            <PhneNb>+5-7-+30</PhneNb>                        </CtctDtls>                    </Pty>                </Cdtr>                <CdtrAcct>                    <Id>                        <Othr>                            <Id>string</Id>                            <SchmeNm>                                <Prtry>PHNE</Prtry>                            </SchmeNm>                        </Othr>                    </Id>                    <Nm>string</Nm>                </CdtrAcct>                <UltmtCdtr>                    <Pty>                        <Nm>string</Nm>                        <Id>                            <OrgId>                                <Othr>                                    <Id>2031</Id>                                </Othr>                            </OrgId>                        </Id>                        <CtctDtls>                            <PhneNb>+2-48(798-202586)105703(273</PhneNb>                        </CtctDtls>                    </Pty>                </UltmtCdtr>                <Purp>                    <Prtry>string</Prtry>                </Purp>            </OrgnlTxRef>        </TxInfAndSts>    </FIToFIPmtStsRpt><ds:Signature xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"_3aace098-dbbe-4866-9ab5-b7576358b3d7\"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/><ds:SignatureMethod Algorithm=\"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256\"/><ds:Reference URI=\"\"><ds:Transforms><ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/><ds:Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/></ds:Transforms><ds:DigestMethod Algorithm=\"http://www.w3.org/2001/04/xmlenc#sha256\"/><ds:DigestValue>mdZzNEdpREysYnXomVVrApdfSBpP0hN2IlC/gNkFsCk=</ds:DigestValue></ds:Reference><ds:Reference URI=\"#_6aa0a3b0-c79d-4eb3-a107-816d82d3cca8\"><ds:DigestMethod Algorithm=\"http://www.w3.org/2001/04/xmlenc#sha256\"/><ds:DigestValue>m5hF3X/prqxRlfLGRgyEidPcKfzb0Chn3vvM+0vSlfw=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>acEKsm7Ngb5Ulc4yLX4/rIoId71pahyFVkYd1Fye/EgIVxFQQIWKprVmbUZ4jV/XgIqLCRW+xtGM6ld6IIh0GkHMslx35IJrCbjMPUmk/CJSlHxttymrvA4NDDeGbHIDbI5qzTTCcRckp7bOvOWuCdpxGYPKNthKYKt2o+CTZxY2CyH45GCw7N2HvExkpJcokLJQ3WXEhy8fOyilYZ0pciCQCjZwbpPYhkjzFTml02iErCnIaSoDDsXS2/n5MLiRrfFC3uK4RgzveZfrzl9GpytGgASPGqtYixzqqsDVZhZkxWqfu2aT5fJVY2MB0mD7WY6X6vE7xj3n2+v/nH1J6A==</ds:SignatureValue><ds:KeyInfo Id=\"_6aa0a3b0-c79d-4eb3-a107-816d82d3cca8\"><ds:X509Data><ds:X509Certificate>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</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></Document>";
+
+		String keystoreFile = "C:\\Users\\karna\\OneDrive\\Documents\\client-truststore.jks";
+		String keystorePass = "wso2carbon";
+		String keystoreAlias = "seal-cert";
+
+		System.out.println(sign(xmlStringRaw, keystoreFile, keystorePass, keystoreAlias));
+
+	}
+
+}

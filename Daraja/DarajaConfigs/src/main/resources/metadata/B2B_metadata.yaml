@@ -1,0 +1,11 @@
+---
+key: "B2B-1.0.0"
+name : "B2B"
+displayName : "B2B"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/daraja/b2b"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

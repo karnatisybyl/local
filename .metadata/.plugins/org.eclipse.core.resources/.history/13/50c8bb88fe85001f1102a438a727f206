@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/{country}/api/v1/accounts" name="retrieveCardsbyAccountNo" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" uri-template="/cards">
+        <inSequence>
+            <!-- Correcting the property name for includeCapture and includeRestricted -->
+            <property expression="get-property('uri.var.country')" name="uri.var.country" scope="default" type="STRING"/>
+            <property expression="$url:includeCapture" name="includeCapture" scope="default" type="STRING"/>
+            <property expression="$url:includeRestricted" name="includeRestricted" scope="default" type="STRING"/>
+            <!-- Logging the incoming request -->
+            <log level="full">
+                <property name="Request" value="Incoming API Request"/>
+                <property expression="$url:includeCapture" name="includeCapture"/>
+                <property expression="$url:includeRestricted" name="includeRestricted"/>
+            </log>
+            <!-- Setting headers -->
+            <header name="Accept" scope="transport" value="application/json"/>
+            <header expression="get-property('transport', 'x-absa-channel-id')" name="x-absa-channel-id" scope="transport"/>
+            <header expression="get-property('transport', 'x-absa-account-no')" name="x-absa-account-no" scope="transport"/>
+            <header expression="get-property('transport', 'x-absa-trace-id')" name="x-absa-trace-id" scope="transport"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

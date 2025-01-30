@@ -1,0 +1,45 @@
+package ipsl.signature;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Arrays;
+
+public class SPAuthentication {
+    public static String generateSPPassword(String spId, String password, String timeStamp) throws NoSuchAlgorithmException {
+        String dataToEncrypt = spId + password + timeStamp;
+        System.out.println("Data to encrypt: " + dataToEncrypt);  // For debugging
+
+        // Hashing the data using SHA-256
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dataToEncrypt.getBytes(StandardCharsets.UTF_8));
+
+        // Output the raw hash for comparison
+        System.out.println("Raw Hash (Bytes): " + Arrays.toString(hash));
+
+        // Encoding the hash in Base64
+        String spPassword = Base64.getEncoder().encodeToString(hash);
+        
+        // Output the Base64-encoded string for comparison
+        System.out.println("spPassword (Base64): " + spPassword);  // For debugging
+
+        return spPassword;
+    }
+
+    public static void main(String[] args) {
+        try {
+            String spId = "107031";
+            String password = "Safaricom123!";
+            String timeStamp = "20241025071745";
+
+            System.out.println("Generated TimeStamp: " + timeStamp);
+
+            String spPassword = generateSPPassword(spId, password, timeStamp);
+            System.out.println("Generated SP Password: " + spPassword);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+}

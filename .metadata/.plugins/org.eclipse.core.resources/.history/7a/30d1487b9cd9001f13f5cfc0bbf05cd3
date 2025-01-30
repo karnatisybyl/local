@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/oauth" name="mpesa_oauth_api" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" url-mapping="/token">
+        <inSequence>
+            <!-- Store credentials in properties -->
+            <property name="consumerKey" scope="default" type="STRING" value="Gjxv1jQFnGQ5dNwEq2EXFOd8UdS6Mdum1NBmUbU4E4kEqJDU"/>
+            <property name="consumerSecret" scope="default" type="STRING" value="6AJ1RXaqMYdciAodB8dPfXhJb6T3J5XbfLDUaojM27nlS2nuqovSAJYndYLw6pri"/>
+            <!-- Combine credentials and encode -->
+            <property expression="base64Encode(fn:concat(get-property('consumerKey'), ':', get-property('consumerSecret')))" name="base64Auth" scope="default" type="STRING"/>
+            <!-- Remove default content -->
+            <payloadFactory media-type="json">
+                <format>{ }</format>
+                <args/>
+            </payloadFactory>
+            <!-- Set headers -->
+            <header expression="fn:concat('Basic ', get-property('base64Auth'))" name="Authorization" scope="transport"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+            <property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+            <!-- Log for debugging -->
+            <log level="custom">
+                <property name="MESSAGE" value="=== Sending OAuth Request ==="/>
+                <property expression="get-property('base64Auth')" name="Authorization"/>
+            </log>
+            <!-- Call endpoint -->
+            <call>
+                <endpoint>
+                    <http method="get">
+                        <suspendOnFailure>
+                            <initialDuration>1000</initialDuration>
+                            <progressionFactor>2</progressionFactor>
+                            <maximumDuration>60000</maximumDuration>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                            <retryDelay>1000</retryDelay>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="custom">
+                <property name="ERROR_MESSAGE" value="=== Error Occurred ==="/>
+                <property expression="get-property('ERROR_CODE')" name="ERROR_CODE"/>
+                <property expression="get-property('ERROR_DETAIL')" name="ERROR_DETAIL"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "error": true,
+                        "message": "Failed to process request",
+                        "detail": $1
+                    }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ERROR_DETAIL')"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

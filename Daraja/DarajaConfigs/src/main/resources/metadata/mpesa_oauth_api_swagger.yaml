@@ -1,0 +1,13 @@
+openapi: 3.0.1
+info:
+  title: mpesa_oauth_api
+  description: API Definition of mpesa_oauth_api
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/daraja/oauth
+paths:
+  /token:
+    get:
+      responses:
+        default:
+          description: Default response

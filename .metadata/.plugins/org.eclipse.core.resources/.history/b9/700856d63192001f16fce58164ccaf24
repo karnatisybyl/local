@@ -1,0 +1,53 @@
+package ipsl.signature;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
+import java.util.Date;
+import java.util.TimeZone;
+
+public class SPAuthentication {
+
+    // Method to generate spPassword
+    public static String generateSPPassword(String spId, String password, String timeStamp) throws NoSuchAlgorithmException {
+        // Concatenate spId, password, and timeStamp
+        String dataToEncrypt = spId + password + timeStamp;
+        System.out.println("dataToEncrypt"+dataToEncrypt);
+
+        // Perform SHA-256 encryption
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dataToEncrypt.getBytes(StandardCharsets.UTF_8));
+        System.out.println(hash);
+
+        // Encode the result in Base64
+        return Base64.getEncoder().encodeToString(hash);  // Correct Base64 encoding
+    }
+
+    // Method to generate current timestamp in UTC timezone
+    public static String generateTimeStamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));  // Set UTC time zone
+        return sdf.format(new Date());
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Sample values
+            String spId = "107031";
+            String password = "Safaricom123!";
+
+            // Generate timeStamp
+            String timeStamp = generateTimeStamp();
+            System.out.println("Generated TimeStamp: " + timeStamp);
+
+            // Generate spPassword
+            String spPassword = generateSPPassword(spId, password, timeStamp);
+            System.out.println("Generated spPassword: " + spPassword);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+}

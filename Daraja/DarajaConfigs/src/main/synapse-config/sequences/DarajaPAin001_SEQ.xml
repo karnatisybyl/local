@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="DarajaPAin001_SEQ" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="SOURCE" scope="default" type="STRING" value="AL01U"/>
+    <property name="UBSCOMP" scope="default" type="STRING" value="FCUBS"/>
+    <property name="USERID" scope="default" type="STRING" value="AL01USRU"/>
+    <property name="BRANCH" scope="default" type="STRING" value="000"/>
+    <property name="SERVICE" scope="default" type="STRING" value="FCUBSRTService"/>
+    <property name="OPERATION" scope="default" type="STRING" value="CreateTransaction"/>
+    <property name="PRD" scope="default" type="STRING" value="FB2C"/>
+    <property name="BRN" scope="default" type="STRING" value="001"/>
+    <property name="TXNTRN" scope="default" type="STRING" value="MBP"/>
+    <property name="OFFSETBRN" scope="default" type="STRING" value="000"/>
+    <property name="OFFSETACC" scope="default" type="STRING" value="A01040004"/>
+    <property name="OFFSETAMT" scope="default" type="STRING" value="1"/>
+    <!-- Properties for dynamic values extracted from XML -->
+    <property expression="//*[local-name()='PmtInfId']/text()" name="PmtInfId" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='DbtrAcct']/*[local-name()='Id']/text()" name="DbtrAcct" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='DbtrAgt']/*[local-name()='BrnchId']/*[local-name()='Id']/text()" name="DbtrAgtBrnchId" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/*[local-name()='Ccy']/text()" name="InstdAmtCurrency" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/*[local-name()='text']/text()" name="InstdAmt" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='RmtInf']/*[local-name()='Ustrd']/text()" name="RmtInf" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='CdtrAcct']/*[local-name()='Id']/text()" name="CdtrAcct" scope="default" type="STRING"/>
+    <!-- Concatenate DbtrAcct, CdtrAcct, and RmtInf for NARRATIVE -->
+    <property expression="fn:concat($ctx:DbtrAcct,'', $ctx:CdtrAcct,'', $ctx:RmtInf)" name="NARRATIVE" scope="default" type="STRING"/>
+    <property expression="//*[local-name()='EndToEndId']/text()" name="EndToEndId" scope="default" type="STRING"/>
+    <log level="custom">
+        <property expression="//*[local-name()='EndToEndId']/text()" name="EndToEndId"/>
+        <property name="SOURCE" value="AL01U"/>
+        <property name="UBSCOMP" value="FCUBS"/>
+        <property name="USERID" value="AL01USRU"/>
+        <property name="BRANCH" value="000"/>
+        <property name="SERVICE" value="FCUBSRTService"/>
+        <property name="OPERATION" value="CreateTransaction"/>
+        <property name="PRD" value="FB2C"/>
+        <property name="BRN" value="001"/>
+        <property name="TXNTRN" value="MBP"/>
+        <property name="OFFSETBRN" value="000"/>
+        <property name="OFFSETACC" value="A01040004"/>
+        <property name="OFFSETAMT" value="1"/>
+        <property expression="//*[local-name()='PmtInfId']/text()" name="PmtInfId"/>
+        <property expression="//*[local-name()='DbtrAcct']/*[local-name()='Id']/text()" name="DbtrAcct"/>
+        <property expression="//*[local-name()='DbtrAgt']/*[local-name()='BrnchId']/*[local-name()='Id']/text()" name="DbtrAgtBrnchId"/>
+        <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/*[local-name()='Ccy']/text()" name="InstdAmtCurrency"/>
+        <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/*[local-name()='text']/text()" name="InstdAmt"/>
+        <property expression="//*[local-name()='RmtInf']/*[local-name()='Ustrd']/text()" name="RmtInf"/>
+        <property expression="//*[local-name()='CdtrAcct']/*[local-name()='Id']/text()" name="CdtrAcct"/>
+        <property expression="fn:concat($ctx:DbtrAcct,'', $ctx:CdtrAcct,'', $ctx:RmtInf)" name="NARRATIVE"/>
+        <!-- Properties for dynamic values extracted from XML -->
+        <!-- Concatenate DbtrAcct, CdtrAcct, and RmtInf for NARRATIVE -->
+    </log>
+</sequence>

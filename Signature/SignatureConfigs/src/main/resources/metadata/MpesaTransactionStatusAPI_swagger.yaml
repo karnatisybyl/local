@@ -1,0 +1,19 @@
+openapi: 3.0.1
+info:
+  title: retrieveCardsbyAccountNo
+  description: API Definition of MpesaTransactionStatusAPI
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/api/v1/accounts
+paths:
+  /cards/{country}:
+    get:
+      parameters:
+      - name: country
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

@@ -1,0 +1,11 @@
+---
+key: "TransactionApi-1.0.0"
+name : "TransactionApi"
+displayName : "TransactionApi"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/TransactionApi"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

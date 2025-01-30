@@ -1,0 +1,11 @@
+---
+key: "mpesa_oauth_api-1.0.0"
+name : "mpesa_oauth_api"
+displayName : "mpesa_oauth_api"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/mpesa/oauth"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

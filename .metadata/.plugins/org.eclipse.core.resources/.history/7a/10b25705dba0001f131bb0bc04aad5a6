@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="XSLTTransformation" xmlns="http://ws.apache.org/ns/synapse">
+    <xsl:stylesheet version="1.0" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://types.ws.gw.fcubs.iflex.com" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output indent="yes" method="xml" omit-xml-declaration="yes"/>
+        <xsl:template match="/">
+            <soapenv:Envelope>
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <typ:CreateTransaction>
+                        <xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
+                        <FCUBS_REQ_ENV xmlns="http://fcubs.iflex.com/service/FCUBSRTService/CreateTransaction">
+                            <FCUBS_HEADER>
+                                <SOURCE>
+                                    <xsl:value-of select="/request/SOURCE"/>
+                                </SOURCE>
+                                <UBSCOMP>
+                                    <xsl:value-of select="/request/UBSCOMP"/>
+                                </UBSCOMP>
+                                <USERID>
+                                    <xsl:value-of select="/request/USERID"/>
+                                </USERID>
+                                <BRANCH>
+                                    <xsl:value-of select="/request/BRANCH"/>
+                                </BRANCH>
+                                <SERVICE>
+                                    <xsl:value-of select="/request/SERVICE"/>
+                                </SERVICE>
+                                <OPERATION>
+                                    <xsl:value-of select="/request/OPERATION"/>
+                                </OPERATION>
+                            </FCUBS_HEADER>
+                            <FCUBS_BODY>
+                                <Transaction-Details-IO>
+                                    <XREF>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/XREF"/>
+                                    </XREF>
+                                    <PRD>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/PRD"/>
+                                    </PRD>
+                                    <BRN>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/BRN"/>
+                                    </BRN>
+                                    <TXNBRN>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/TXNBRN"/>
+                                    </TXNBRN>
+                                    <TXNACC>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/TXNACC"/>
+                                    </TXNACC>
+                                    <TXNCCY>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/TXNCCY"/>
+                                    </TXNCCY>
+                                    <TXNTRN>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/TXNTRN"/>
+                                    </TXNTRN>
+                                    <OFFSETBRN>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/OFFSETBRN"/>
+                                    </OFFSETBRN>
+                                    <OFFSETACC>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/OFFSETACC"/>
+                                    </OFFSETACC>
+                                    <OFFSETCCY>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/OFFSETCCY"/>
+                                    </OFFSETCCY>
+                                    <OFFSETAMT>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/OFFSETAMT"/>
+                                    </OFFSETAMT>
+                                    <NARRATIVE>
+                                        <xsl:value-of select="/request/Transaction-Details-IO/NARRATIVE"/>
+                                    </NARRATIVE>
+                                </Transaction-Details-IO>
+                            </FCUBS_BODY>
+                        </FCUBS_REQ_ENV>
+                        <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
+                    </typ:CreateTransaction>
+                </soapenv:Body>
+            </soapenv:Envelope>
+        </xsl:template>
+    </xsl:stylesheet>
+</localEntry>

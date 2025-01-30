@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extracting relevant properties from the payload -->
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <!-- Logging the extracted properties -->
+            <log level="custom">
+                <property expression="get-property('CdtrNm')" name="CdtrNm"/>
+                <property expression="get-property('DbtrNm')" name="DbtrNm"/>
+                <property expression="get-property('InstdAmt')" name="InstdAmt"/>
+                <property expression="get-property('DbtrPhneNb')" name="DbtrPhneNb"/>
+                <property expression="get-property('CdtrPhneNb')" name="CdtrPhneNb"/>
+            </log>
+            <!-- Initialize the ValidationError property to "Validation Passed" -->
+            <property name="ValidationError" scope="default" type="STRING" value="Validation Passed"/>
+            <script language="js"><![CDATA[var log = mc.getServiceLog();
+
+        function formatMobileNumber(mobileNumber) {
+            mobileNumber = mobileNumber.trim();
+            log.info("Original Mobile Number: " + mobileNumber);
+
+            // Validate if the mobile number contains only digits
+            if (!/^\d+$/.test(mobileNumber)) {
+                log.error("Mobile number must contain digits only.");
+                return "Error: Mobile number must contain digits only.";
+            }
+
+            // Handling the prefix for valid Kenyan numbers
+            if (mobileNumber.startsWith('254') && mobileNumber.length === 12) {
+                log.info("Valid Kenyan number with prefix +254: " + mobileNumber);
+                return '+' + mobileNumber;
+            }
+
+            // Handle local numbers starting with 0 (e.g., 0712345678, 0123456789)
+            if (mobileNumber.startsWith('07') && mobileNumber.length === 10) {
+                mobileNumber = '254' + mobileNumber.substring(1); // Remove the leading 0 and add the country code
+                log.info("Formatted local number with prefix +254: " + mobileNumber);
+                return '+' + mobileNumber; // Output the formatted mobile number with +254
+            }
+
+            // Handle local numbers starting with 1 (e.g., 1234567890)
+            if (mobileNumber.startsWith('01') && mobileNumber.length === 10) {
+                mobileNumber = '254' + mobileNumber.substring(1); // Remove the leading 0 and add the country code
+                log.info("Formatted local number starting with 01: " + mobileNumber);
+                return '+' + mobileNumber; // Output the formatted mobile number with +254
+            }
+
+            // Handle cases where number starts with 7 or 1 (assuming they are local numbers)
+            if ((mobileNumber.startsWith('7') || mobileNumber.startsWith('1')) && mobileNumber.length === 9) {
+                mobileNumber = '254' + mobileNumber; // Add the country code
+                log.info("Formatted local number starting with 7 or 1: " + mobileNumber);
+                return '+' + mobileNumber; // Output the formatted mobile number with +254
+            }
+
+            // If none of the conditions are met, return an error
+            log.error("Invalid mobile number format.");
+            return "Error: Invalid mobile number format.";
+        }
+
+        var phone = formatMobileNumber(mc.getProperty("DbtrPhneNb"));
+        mc.setProperty("FormattedPhoneNumber", phone);
+
+        var CdtrNm = mc.getProperty("CdtrNm");
+        var DbtrNm = mc.getProperty("DbtrNm");
+        var InstdAmt = mc.getProperty("InstdAmt");
+
+        // Logging values to ensure they are being correctly captured
+        log.info("CdtrNm: " + CdtrNm);
+        log.info("DbtrNm: " + DbtrNm);
+        log.info("InstdAmt: " + InstdAmt);
+        log.info("Formatted Phone: " + phone);
+
+        // Validate extracted values
+        if (!CdtrNm || CdtrNm.trim() === "") {
+            mc.setProperty("ValidationError", "CdtrNm is null or empty.");
+        } else if (!DbtrNm || DbtrNm.trim() === "") {
+            mc.setProperty("ValidationError", "DbtrNm is null or empty.");
+        } else if (!InstdAmt || InstdAmt.trim() === "" || isNaN(InstdAmt)) {
+            mc.setProperty("ValidationError", "InstdAmt is not a valid number or is null/empty.");
+        } else if (phone.startsWith("Error")) {
+            mc.setProperty("ValidationError", "Invalid phone number format.");
+        } else {
+            mc.setProperty("ValidationError", "Validation Passed");
+        }]]></script>
+            <log level="custom">
+                <property expression="get-property('ValidationError')" name="ValidationError"/>
+            </log>
+            <!-- Create a JSON response with the ValidationError -->
+            <payloadFactory media-type="json">
+                <format>
+                    { "status": "FAILED", "description": "$1" }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ValidationError')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

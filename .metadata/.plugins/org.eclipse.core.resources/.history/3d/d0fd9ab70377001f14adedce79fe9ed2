@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/emailvalidation" name="emailValidation" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/sendEmail">
+        <inSequence>
+            <!-- Step 1: Validate email addresses -->
+            <!-- Step 4: Proceed to send the email -->
+            <!-- Return error message if validation fails -->
+            <property expression="json-eval($.from)" name="fromEmail" scope="default" type="STRING"/>
+            <property expression="json-eval($.to)" name="toEmail" scope="default" type="STRING"/>
+            <property expression="json-eval($.reference)" name="referenceEmail" scope="default" type="STRING"/>
+            <!-- Step 2: Validate email addresses using a JavaScript function -->
+            <script language="js"><![CDATA[function isValidEmail(email) {
+                        var emailRegex = /^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$/;
+                        return emailRegex.test(email);
+                    }
+
+                    var fromEmail = mc.getProperty('fromEmail');
+                    var toEmail = mc.getProperty('toEmail');
+                    var referenceEmail = mc.getProperty('referenceEmail');
+
+                    if (!isValidEmail(fromEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "from" email address: ' + fromEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else if (!isValidEmail(toEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "to" email address: ' + toEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else if (!isValidEmail(referenceEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "reference" email address: ' + referenceEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else {
+                        mc.setProperty('ERROR_STATUS', 'false');
+                    }]]></script>
+            <!-- Step 3: Check if any validation failed -->
+            <filter xpath="get-property('ERROR_STATUS') = 'true'">
+                <then>
+                    <log level="full">
+                        <property expression="get-property('INVALID_EMAIL')" name="ValidationError"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>{"error": "Invalid email address", "details": "$1"}</format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('INVALID_EMAIL')"/>
+                        </args>
+                    </payloadFactory>
+                    <respond/>
+                </then>
+                <else>
+                    <property name="subject" scope="default" type="STRING" value="Test Email"/>
+                    <property name="message" scope="default" type="STRING" value="This is a test email."/>
+                    <property name="mail.smtp.host" scope="axis2" type="STRING" value="smtp.gmail.com"/>
+                    <property name="mail.smtp.port" scope="axis2" type="STRING" value="587"/>
+                    <property name="mail.smtp.auth" scope="axis2" type="STRING" value="true"/>
+                    <property name="mail.smtp.starttls.enable" scope="axis2" type="STRING" value="true"/>
+                    <property expression="get-property('toEmail')" name="transport.mail.Address" scope="axis2" type="STRING"/>
+                    <!-- Return success response -->
+                    <payloadFactory media-type="json">
+                        <format>{"message": "Email sent successfully"}</format>
+                        <args/>
+                    </payloadFactory>
+                    <respond/>
+                </else>
+            </filter>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="full">
+                <property expression="get-property('ERROR_MESSAGE')" name="ERROR"/>
+            </log>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

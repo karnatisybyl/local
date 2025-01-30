@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/cdata" name="cdata" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression="//FCUBS_REQ_ENV" name="fcubs_req_env" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('fcubs_req_env')" name="fcubs_req_env"/>
+            </log>
+            <xslt key="XSLTTransformation">
+                <property expression="get-property('fcubs_req_env')" name="fcubs_req_env"/>
+            </xslt>
+            <log level="full">
+                <property expression="$body" name="name"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

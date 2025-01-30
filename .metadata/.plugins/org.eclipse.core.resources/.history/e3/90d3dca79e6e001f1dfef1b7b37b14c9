@@ -1,0 +1,101 @@
+package XMLSignatureTestProject;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import org.w3c.dom.Document;
+import java.util.UUID;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import javax.xml.crypto.dsig.*;
+import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
+import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyException;
+import java.security.KeyStoreException;
+import java.security.UnrecoverableKeyException;
+
+public class SampleSignature {
+
+    private KeyStoreService keystoreService;
+
+    public SampleSignature(KeyStoreService keystoreService) {
+        this.keystoreService = keystoreService;
+    }
+
+    public String signXMLString(Document document)
+            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException, TransformerConfigurationException, TransformerException, ParserConfigurationException, UnsupportedEncodingException, KeyStoreException, UnrecoverableKeyException, SAXException, IOException, KeyException, XMLStreamException {
+        // get keys and certificate
+        PrivateKey privateKey = keystoreService.getPrivateKey();
+        X509Certificate x509Certificate = keystoreService.getCertificate();
+
+        // Set keyinfo and signature URI IDs
+        String keyInfoId = UUID.randomUUID().toString();
+        String signatureId = UUID.randomUUID().toString();
+
+        // Create signing context
+        DOMSignContext dsc = new DOMSignContext(privateKey, document.getDocumentElement());
+        XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+
+        // Set transform attributes for references
+        Transform envelopedTransform = fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null);
+        Transform c14NEXCTransform = fac.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null);
+        List<Transform> transforms = Arrays.asList(envelopedTransform, c14NEXCTransform);
+
+        // Get all the reference URI IDs
+        Reference ref = fac.newReference("", fac.newDigestMethod(DigestMethod.SHA256, null), transforms, null, null);
+
+        Reference keyInfoRef = fac.newReference(
+                "#" + keyInfoId,
+                fac.newDigestMethod(DigestMethod.SHA256, null),
+                Collections.singletonList(fac.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null)),
+                null,
+                null
+        );
+
+        List<Reference> refIds = Arrays.asList(ref, keyInfoRef);
+
+        // Create the signing object with the references
+        SignedInfo si = fac.newSignedInfo(
+                fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null),
+                fac.newSignatureMethod(SignatureMethod.RSA_SHA256, null),
+                refIds
+        );
+
+        // Create KeyInfo object with the signing certificate
+        KeyInfoFactory kif = fac.getKeyInfoFactory();
+        X509Data newX509Data = kif.newX509Data(Arrays.asList(x509Certificate));
+        KeyInfo ki = kif.newKeyInfo(Collections.singletonList(newX509Data), keyInfoId);
+
+        // Create XML Signature object
+        XMLSignature signature = fac.newXMLSignature(si, ki, null, signatureId, null);
+
+        // Generating the signature
+        signature.sign(dsc);
+
+        // Marshal, generate, and sign the enveloped signature
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(new DOMSource(document), new StreamResult(output));
+
+        return new String(output.toByteArray(), "UTF-8");
+        
+    }
+    
+}

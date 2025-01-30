@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="DarajaCoreTransaction_SEQ" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="full">
+        <property name="DarajaCoreTransaction_SEQ" value=":::::::::::::::START"/>
+    </log>
+    <payloadFactory media-type="xml">
+        <format>
+            <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://types.ws.gw.fcubs.iflex.com">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <typ:CreateTransaction><![CDATA[<FCUBS_REQ_ENV xmlns="http://fcubs.iflex.com/service/FCUBSRTService/CreateTransaction">				<FCUBS_HEADER>					<SOURCE>$1</SOURCE>					<UBSCOMP>$2</UBSCOMP>					<USERID>$3</USERID>					<BRANCH>$4</BRANCH>					<SERVICE>$5</SERVICE>					<OPERATION>$6</OPERATION>				</FCUBS_HEADER>				<FCUBS_BODY>					<Transaction-Details-IO>						<XREF>$7</XREF>						<PRD>$8</PRD>						<BRN>$9</BRN>						<TXNBRN>$10</TXNBRN>						<TXNACC>$11</TXNACC>						<TXNCCY>$12</TXNCCY>						<TXNTRN>$13</TXNTRN>						<TXNAMT>$14</TXNAMT>						<OFFSETBRN>$15</OFFSETBRN>						<OFFSETACC>$16</OFFSETACC>						<OFFSETCCY>$17</OFFSETCCY>						<NARRATIVE>$18</NARRATIVE>					</Transaction-Details-IO>				</FCUBS_BODY></FCUBS_REQ_ENV>]]></typ:CreateTransaction>
+                </soapenv:Body>
+            </soapenv:Envelope>
+        </format>
+        <args>
+            <arg evaluator="xml" expression="get-property('SOURCE')"/>
+            <arg evaluator="xml" expression="get-property('UBSCOMP')"/>
+            <arg evaluator="xml" expression="get-property('USERID')"/>
+            <arg evaluator="xml" expression="get-property('BRANCH')"/>
+            <arg evaluator="xml" expression="get-property('SERVICE')"/>
+            <arg evaluator="xml" expression="get-property('OPERATION')"/>
+            <arg evaluator="xml" expression="get-property('EndToEndId')"/>
+            <arg evaluator="xml" expression="get-property('PRD')"/>
+            <arg evaluator="xml" expression="get-property('BRN')"/>
+            <arg evaluator="xml" expression="get-property('DbtrAgtBrnchId')"/>
+            <arg evaluator="xml" expression="get-property('DbtrAcct')"/>
+            <arg evaluator="xml" expression="get-property('InstdAmtCurrency')"/>
+            <arg evaluator="xml" expression="get-property('TXNTRN')"/>
+            <arg evaluator="xml" expression="get-property('InstdAmt')"/>
+            <arg evaluator="xml" expression="get-property('OFFSETBRN')"/>
+            <arg evaluator="xml" expression="get-property('OFFSETACC')"/>
+            <arg evaluator="xml" expression="get-property('InstdAmtCurrency')"/>
+            <arg evaluator="xml" expression="get-property('NARRATIVE')"/>
+        </args>
+    </payloadFactory>
+</sequence>

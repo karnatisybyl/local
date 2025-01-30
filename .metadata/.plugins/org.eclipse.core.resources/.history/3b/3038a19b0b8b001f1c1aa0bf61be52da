@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/cdata" name="cdata" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <payloadFactory media-type="xml" template-type="freemarker">
+                <format><![CDATA[<root>
+<name>$1</name>
+</root>]]></format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:name"/>
+                </args>
+            </payloadFactory>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

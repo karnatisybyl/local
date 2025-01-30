@@ -1,0 +1,67 @@
+package ipsl.signature;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
+import java.util.Date;
+import java.util.TimeZone;
+
+public class SPAuthentication {
+
+    // Method to generate spPassword
+    public static String generateSPPassword(String spId, String password, String timeStamp) throws NoSuchAlgorithmException {
+        // Concatenate spId, password, and timeStamp
+        String dataToEncrypt = spId + password + timeStamp;
+        System.out.println("Data to encrypt: " + dataToEncrypt);  // For debugging
+
+        // Perform SHA-256 encryption
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dataToEncrypt.getBytes(StandardCharsets.UTF_8));
+
+        // Debugging: Print byte array of hash for exact matching
+        System.out.print("Raw SHA-256 Hash (Bytes): ");
+        for (byte b : hash) {
+            System.out.printf("%02x ", b);
+        }
+        System.out.println();
+
+        // Convert hash to hexadecimal for comparison
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            hexString.append(String.format("%02x", b));  // Convert to hex
+        }
+        System.out.println("SHA-256 Hash (Hex): " + hexString.toString());  // Debug output
+
+        // Encode the result in Base64
+        String spPassword = Base64.getEncoder().encodeToString(hash);
+        System.out.println("spPassword (Base64): " + spPassword);  // For debugging
+        return spPassword;
+    }
+
+    // Method to generate current timestamp in UTC timezone
+    public static String generateTimeStamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));  // Set UTC time zone
+        return sdf.format(new Date());
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Sample values
+            String spId = "107031";
+            String password = "Safaricom123!";
+
+            // Generate timeStamp
+            String timeStamp = generateTimeStamp();
+            System.out.println("Generated TimeStamp: " + timeStamp);
+
+            // Generate spPassword
+            String spPassword = generateSPPassword(spId, password, timeStamp);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+}

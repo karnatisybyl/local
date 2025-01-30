@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="PayInstalmentInSequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log description="PAY_INSTALMENT_START_LOG" level="full">
+        <property name="PAY_INSTALMENT_START_LOG" value="Executing Pay Instalment In Sequence"/>
+    </log>
+    <datamapper config="gov:datamapper/PayInstalmentDataMapper.dmc" inputSchema="gov:datamapper/PayInstalmentDataMapper_inputSchema.json" inputType="JSON" outputSchema="gov:datamapper/PayInstalmentDataMapper_outputSchema.json" outputType="XML" xsltStyleSheet="gov:datamapper/PayInstalmentDataMapper_xsltStyleSheet.xml"/>
+    <header name="soapAction" scope="transport" value=""/>
+    <log level="full"/>
+    <send>
+        <endpoint key="PayInstalment"/>
+    </send>
+</sequence>

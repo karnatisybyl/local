@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/oauth" name="mpesa_oauth_api" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" url-mapping="/token">
+        <inSequence>
+            <log level="full">
+                <property name="mpesa_oauth_api" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <property name="consumerKey" scope="default" type="STRING" value="Gjxv1jQFnGQ5dNwEq2EXFOd8UdS6Mdum1NBmUbU4E4kEqJDU"/>
+            <property name="consumerSecret" scope="default" type="STRING" value="6AJ1RXaqMYdciAodB8dPfXhJb4T3J5XbfLDUaojM27nlS2nuqovSAJYndYLw6pri"/>
+            <property expression="base64Encode(fn:concat(get-property('consumerKey'), ':', get-property('consumerSecret')))" name="concatIDs" scope="default" type="STRING"/>
+            <property name="Basic" scope="default" type="STRING" value="Basic"/>
+            <header expression="fn:concat(get-property('Basic'),' ', get-property('concatIDs'))" name="Authorization" scope="transport"/>
+            <call>
+                <endpoint>
+                    <http method="get" uri-template="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials">
+                        <suspendOnFailure>
+                            <initialDuration>1000</initialDuration>
+                            <progressionFactor>2</progressionFactor>
+                            <maximumDuration>60000</maximumDuration>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                            <retryDelay>1000</retryDelay>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "error": true,
+                        "message": "Error occurred while processing request"
+                    }
+                </format>
+                <args/>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

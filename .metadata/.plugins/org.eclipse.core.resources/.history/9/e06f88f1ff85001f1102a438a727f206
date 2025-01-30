@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/api/v1/accounts" name="retrieveCardsbyAccountNo" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" uri-template="/cards/{country}">
+        <inSequence>
+            <!-- Correcting the property name for includeCapture and includeRestricted -->
+            <property expression="get-property('uri.var.country')" name="uri.var.country" scope="default" type="STRING"/>
+            <property expression="$url:includeCapture" name="includeCapture" scope="default" type="STRING"/>
+            <property expression="$url:includeRestricted" name="includeRestricted" scope="default" type="STRING"/>
+            <!-- Logging the incoming request -->
+            <!-- Setting propertys -->
+            <property name="Accept" scope="default" type="STRING" value="application/json"/>
+            <property expression="$trp:x-absa-channel-id" name="x-absa-channel-id" scope="default" type="STRING"/>
+            <property expression="$trp:x-absa-account-no" name="x-absa-account-no" scope="default" type="STRING"/>
+            <property expression="$trp:x-absa-trace-id" name="x-absa-trace-id" scope="default" type="STRING"/>
+            <log level="full">
+                <property name="Request" value="Incoming API Request"/>
+                <property expression="get-property('uri.var.country')" name="uri.var.country"/>
+                <property expression="$url:includeCapture" name="includeCapture"/>
+                <property expression="$url:includeRestricted" name="includeRestricted"/>
+                <property name="Accept" value="application/json"/>
+                <property expression="$trp:x-absa-channel-id" name="x-absa-channel-id"/>
+                <property expression="$trp:x-absa-account-no" name="x-absa-account-no"/>
+                <property expression="$trp:x-absa-trace-id" name="x-absa-trace-id"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

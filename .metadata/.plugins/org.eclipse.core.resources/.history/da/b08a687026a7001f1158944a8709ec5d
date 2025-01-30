@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/test" name="test" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <class name="ipsl.signature.Test">
+                <property expression="//*[local-name()='Document']" name="XmlStringRaw"/>
+                <property name="keystoreFile" value="C:/Program Files/OpenSSL-Win64/bin/client-truststore.jks"/>
+                <property name="keystorePass" value="1gObh6cpP3IT"/>
+                <property name="keystoreAlias" value="ipsl"/>
+            </class>
+            <property expression="get-property('output')" name="response" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="get-property('output')" name="response#############"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

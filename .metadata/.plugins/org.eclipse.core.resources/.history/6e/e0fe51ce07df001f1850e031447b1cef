@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/dbTestAPI" name="dbTestAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="full"/>
+            <property expression="$body/*" name="code" scope="default" type="STRING"/>
+            <property name="star" scope="default" type="STRING" value="*"/>
+            <property expression="concat('select &quot;',$ctx:star,'&quot;' from acmt_entries;')" name="query" scope="default" type="STRING"/>
+            <sequence key="customDBSequence"/>
+            <property expression="get-property('Result')" name="queryResult" scope="default" type="STRING"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="customDBSequence"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

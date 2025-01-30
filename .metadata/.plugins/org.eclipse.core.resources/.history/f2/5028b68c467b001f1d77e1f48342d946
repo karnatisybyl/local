@@ -1,0 +1,240 @@
+package ipsl.signature;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.crypto.dsig.DigestMethod;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureMethod;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
+import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.synapse.MessageContext;
+import org.apache.synapse.mediators.AbstractMediator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+public class Ep extends AbstractMediator {
+    private String xmlStringRaw;
+    private String keystoreFile;
+    private String keystorePass;
+    private String keystoreAlias;
+    private String endpointUrl;
+    private static final Log log = LogFactory.getLog(Ep.class);
+
+    protected static final String typAlgorithm = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
+    protected static final String canAlgorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+    protected static final String digAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+    protected static final String sigAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+
+    protected static final boolean omitDec = true;
+    protected static final boolean indent = false;
+
+    // Getters and setters for class properties
+    public String getXmlStringRaw() {
+        return xmlStringRaw;
+    }
+
+    public void setXmlStringRaw(String xmlStringRaw) {
+        this.xmlStringRaw = xmlStringRaw;
+    }
+
+    public String getKeystoreFile() {
+        return keystoreFile;
+    }
+
+    public void setKeystoreFile(String keystoreFile) {
+        this.keystoreFile = keystoreFile;
+    }
+
+    public String getKeystorePass() {
+        return keystorePass;
+    }
+
+    public void setKeystorePass(String keystorePass) {
+        this.keystorePass = keystorePass;
+    }
+
+    public String getKeystoreAlias() {
+        return keystoreAlias;
+    }
+
+    public void setKeystoreAlias(String keystoreAlias) {
+        this.keystoreAlias = keystoreAlias;
+    }
+
+    public String getEndpointUrl() {
+        return endpointUrl;
+    }
+
+    public void setEndpointUrl(String endpointUrl) {
+        this.endpointUrl = endpointUrl;
+    }
+
+    @Override
+    public boolean mediate(MessageContext context) {
+        try {
+            // Sign the XML
+         //   String signedXml = sign(xmlStringRaw, keystoreFile, keystorePass, keystoreAlias);
+            log.info(sign(xmlStringRaw, keystoreFile, keystorePass, keystoreAlias));
+            context.setProperty("signedXml", sign(xmlStringRaw, keystoreFile, keystorePass, keystoreAlias));
+
+            // Send the signed XML to the endpoint
+            sendSignedXml(signedXml, endpointUrl, keystoreFile, keystorePass);
+            log.info("Signed XML sent successfully to: " + endpointUrl);
+            context.setProperty("sendStatus", "SUCCESS");
+
+        } catch (Exception e) {
+            log.error("Error during signing or sending XML: " + e.getMessage(), e);
+            context.setProperty("sendStatus", "FAILURE");
+            context.setProperty("errorMessage", e.getMessage());
+        }
+        return true;
+    }
+
+    public static KeyStore loadKeyStore(String keystoreFile, String keystorePass) throws Exception {
+        KeyStore keyStore = null;
+        InputStream is = openResource(keystoreFile);
+        if (is == null) {
+            throw new Exception("KeyStore not found: " + keystoreFile);
+        }
+
+        keyStore = keystoreFile.endsWith(".p12") ? KeyStore.getInstance("PKCS12") : KeyStore.getInstance("JKS");
+        keyStore.load(is, keystorePass.toCharArray());
+        return keyStore;
+    }
+
+    public static InputStream openResource(String fileName) throws Exception {
+        if (fileName.startsWith("/") || fileName.indexOf(':') > 0) {
+            return new FileInputStream(fileName);
+        }
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+    }
+
+    public static PrivateKey loadPrivateKey(String keystoreAlias, KeyStore keyStore, String keystorePass) throws Exception {
+        Key aliasKey = keyStore.getKey(keystoreAlias, keystorePass.toCharArray());
+        return (aliasKey instanceof PrivateKey) ? (PrivateKey) aliasKey : null;
+    }
+
+    public static Certificate loadCertificate(String keystoreAlias, KeyStore keyStore, String keystorePass) throws Exception {
+        Certificate aliasCertificate = keyStore.getCertificate(keystoreAlias);
+        if (!(aliasCertificate instanceof X509Certificate)) {
+            throw new Exception("Certificate not found or invalid for alias: " + keystoreAlias);
+        }
+        return aliasCertificate;
+    }
+
+    public static String sign(String content, String keystoreFile, String keystorePass, String keystoreAlias) throws Exception {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(new ByteArrayInputStream(content.getBytes()));
+
+        KeyStore ks = loadKeyStore(keystoreFile, keystorePass);
+        XMLSignature xmlSignature = createXMLSignature(document, ks, keystorePass, keystoreAlias);
+        Element rootNode = document.getDocumentElement();
+
+        DOMSignContext domSignContext = new DOMSignContext(loadPrivateKey(keystoreAlias, ks, keystorePass), rootNode);
+        domSignContext.setDefaultNamespacePrefix("ds");
+        xmlSignature.sign(domSignContext);
+
+        return nodeToString(rootNode);
+    }
+
+    public static String nodeToString(Node node) throws Exception {
+        StringWriter stringWriter = new StringWriter();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitDec ? "yes" : "no");
+        transformer.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+        transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
+        return stringWriter.toString();
+    }
+
+    public static XMLSignature createXMLSignature(Document document, KeyStore ks, String keystorePass, String keystoreAlias) throws Exception {
+        XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM");
+        CanonicalizationMethod c14nMethod = xmlSignatureFactory.newCanonicalizationMethod(canAlgorithm, (C14NMethodParameterSpec) null);
+        DigestMethod digestMethod = xmlSignatureFactory.newDigestMethod(digAlgorithm, null);
+        SignatureMethod signMethod = xmlSignatureFactory.newSignatureMethod(sigAlgorithm, null);
+        Transform sigTransform = xmlSignatureFactory.newTransform(typAlgorithm, (TransformParameterSpec) null);
+        Transform canTransform = xmlSignatureFactory.newTransform(canAlgorithm, (TransformParameterSpec) null);
+
+        List<Transform> transforms = new ArrayList<>();
+        transforms.add(sigTransform);
+        transforms.add(canTransform);
+
+        Reference referenceDoc = xmlSignatureFactory.newReference("", digestMethod, transforms, null, null);
+        SignedInfo signedInfo = xmlSignatureFactory.newSignedInfo(c14nMethod, signMethod, Collections.singletonList(referenceDoc));
+
+        KeyInfoFactory keyInfoFactory = xmlSignatureFactory.getKeyInfoFactory();
+        X509Data x509Data = keyInfoFactory.newX509Data(Collections.singletonList(loadCertificate(keystoreAlias, ks, keystorePass)));
+        KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data));
+
+        return xmlSignatureFactory.newXMLSignature(signedInfo, keyInfo);
+    }
+
+    public static void sendSignedXml(String signedXml, String endpointUrl, String keystoreFile, String keystorePass) throws Exception {
+        KeyStore keyStore = loadKeyStore(keystoreFile, keystorePass);
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(keyStore);
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+
+        URL url = new URL(endpointUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        //connection.setSSLSocketFactory(sslContext.getSocketFactory());
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/xml");
+        connection.getOutputStream().write(signedXml.getBytes("UTF-8"));
+        
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new Exception("Error sending signed XML: HTTP response code " + responseCode);
+        }
+
+        // Reading the response (optional)
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String responseLine;
+            StringBuilder response = new StringBuilder();
+            while ((responseLine = reader.readLine()) != null) {
+                response.append(responseLine);
+            }
+            log.info("Response from server: " + response.toString());
+        }
+    }
+}

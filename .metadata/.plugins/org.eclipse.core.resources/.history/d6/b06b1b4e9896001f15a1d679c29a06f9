@@ -1,0 +1,13 @@
+package ipsl.signature;
+
+import org.apache.commons.text.StringEscapeUtils;
+
+public class Replacingxml {
+
+	public static void main(String[] args) {
+		String escapedXml = "<res:ResultMsg ...>"; // your escaped XML string
+		String unescapedXml = StringEscapeUtils.unescapeXml(escapedXml); 
+		System.out.println(unescapedXml);
+	}
+
+}

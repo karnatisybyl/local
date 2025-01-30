@@ -1,0 +1,186 @@
+{
+  "$schema" : "http://wso2.org/json-schema/wso2-data-mapper-v5.0.0/schema#",
+  "outputType" : "XML",
+  "id" : "http://wso2jsonschema.org",
+  "title" : "soapenv:Envelope",
+  "type" : "object",
+  "properties" : {
+    "soapenv:Header" : {
+      "id" : "http://wso2jsonschema.org/soapenv:Header",
+      "type" : "string"
+    },
+    "soapenv:Body" : {
+      "id" : "http://wso2jsonschema.org/soapenv:Body",
+      "type" : "object",
+      "properties" : {
+        "spi:payInstalment" : {
+          "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment",
+          "type" : "object",
+          "properties" : {
+            "spi:sessionContext" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext",
+              "type" : "object",
+              "properties" : {
+                "con:bankCode" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:bankCode",
+                  "type" : "number"
+                },
+                "con:channel" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:channel",
+                  "type" : "string"
+                },
+                "con:externalBatchNumber" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:externalBatchNumber",
+                  "type" : "number"
+                },
+                "con:externalReferenceNo" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:externalReferenceNo",
+                  "type" : "string"
+                },
+                "con:externalSystemAuditTrailNumber" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:externalSystemAuditTrailNumber",
+                  "type" : "number"
+                },
+                "con:localDateTimeText" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:localDateTimeText",
+                  "type" : "string"
+                },
+                "con:originalReferenceNo" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:originalReferenceNo",
+                  "type" : "string"
+                },
+                "con:overridenWarnings" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:overridenWarnings",
+                  "type" : "string"
+                },
+                "con:postingDateText" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:postingDateText",
+                  "type" : "string"
+                },
+                "con:reason" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:reason",
+                  "type" : "object",
+                  "properties" : {
+                    "con:comment" : {
+                      "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:reason/con:comment",
+                      "type" : "string"
+                    },
+                    "con:reasonCode" : {
+                      "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:reason/con:reasonCode",
+                      "type" : "number"
+                    }
+                  }
+                },
+                "con:serviceCode" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:serviceCode",
+                  "type" : "string"
+                },
+                "con:sessionTicket" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:sessionTicket",
+                  "type" : "string"
+                },
+                "con:supervisorContext" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:supervisorContext",
+                  "type" : "object",
+                  "properties" : {
+                    "con:primaryPassword" : {
+                      "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:supervisorContext/con:primaryPassword",
+                      "type" : "string"
+                    },
+                    "con:userId" : {
+                      "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:supervisorContext/con:userId",
+                      "type" : "string"
+                    }
+                  }
+                },
+                "con:transactionBranch" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:transactionBranch",
+                  "type" : "number"
+                },
+                "con:userId" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:userId",
+                  "type" : "string"
+                },
+                "con:userReferenceNumber" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:userReferenceNumber",
+                  "type" : "string"
+                },
+                "con:valueDateText" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:sessionContext/con:valueDateText",
+                  "type" : "string"
+                }
+              }
+            },
+            "spi:loanAccountId" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:loanAccountId",
+              "type" : "string"
+            },
+            "spi:accountID" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:accountID",
+              "type" : "number"
+            },
+            "spi:loanAcctAmount" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:loanAcctAmount",
+              "type" : "number"
+            },
+            "spi:GLccyShortName" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:GLccyShortName",
+              "type" : "string"
+            },
+            "spi:narrative" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:narrative",
+              "type" : "string"
+            },
+            "spi:flgInstallmentType" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:flgInstallmentType",
+              "type" : "number"
+            },
+            "spi:transactionType" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:transactionType",
+              "type" : "number"
+            },
+            "spi:extendedReferenceNoDTO" : {
+              "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO",
+              "type" : "object",
+              "properties" : {
+                "dto:extRefNo1" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO/dto:extRefNo1",
+                  "type" : "number"
+                },
+                "dto:extRefNo2" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO/dto:extRefNo2",
+                  "type" : "number"
+                },
+                "dto:extRefNo3" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO/dto:extRefNo3",
+                  "type" : "number"
+                },
+                "dto:extRefNo4" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO/dto:extRefNo4",
+                  "type" : "number"
+                },
+                "dto:refCustomerNo" : {
+                  "id" : "http://wso2jsonschema.org/soapenv:Body/spi:payInstalment/spi:extendedReferenceNoDTO/dto:refCustomerNo",
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "namespaces" : [ {
+    "prefix" : "soapenv",
+    "url" : "http://schemas.xmlsoap.org/soap/envelope/"
+  }, {
+    "prefix" : "spi",
+    "url" : "http://spi.loans.app.fcr.iflex.com"
+  }, {
+    "prefix" : "con",
+    "url" : "http://context.app.fcr.iflex.com"
+  }, {
+    "prefix" : "dto",
+    "url" : "http://dto.savings.deposit.app.fcr.iflex.com"
+  } ]
+}

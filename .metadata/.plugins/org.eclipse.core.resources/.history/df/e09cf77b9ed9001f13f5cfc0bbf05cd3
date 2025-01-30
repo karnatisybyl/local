@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/oauth" name="mpesa_oauth_api" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" url-mapping="/token">
+        <inSequence>
+            <!-- Set the Authorization header directly as in Java code -->
+            <header name="Authorization" scope="transport" value="Basic R2p4djFqUUZuR1E1ZE53RXEyRVhGT2Q4VWRTNk1kdW0xTkJtVWJVNEU0a0VxSkRVOjZBSjFSWGFxTVlkY2lBb2RCOGRQZlhoSmI0VDNKNVhiZkxEVWFvak0yN25sUzJudXFvdlNBSlluZFlMdzZwcmk="/>
+            <call>
+                <endpoint>
+                    <http method="get" uri-template="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials">
+                        <suspendOnFailure>
+                            <initialDuration>1000</initialDuration>
+                            <progressionFactor>2</progressionFactor>
+                            <maximumDuration>60000</maximumDuration>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                            <retryDelay>1000</retryDelay>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "error": true,
+                        "message": "Error occurred while processing request"
+                    }
+                </format>
+                <args/>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

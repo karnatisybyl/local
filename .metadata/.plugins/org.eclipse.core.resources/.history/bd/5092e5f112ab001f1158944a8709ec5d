@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/test" name="test" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/VerifyAccount">
+        <inSequence>
+            <property expression="//*[local-name()='Document']" name="requestBody" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="//*[local-name()='Document']" name="requestBody"/>
+            </log>
+            <property expression="json-eval($.Error)" name="Error" scope="default" type="STRING"/>
+            <filter regex="false" source="boolean(get-property('Error'))">
+                <then>
+                    <property expression="$ctx:requestBody" name="XmlStringRaw" scope="default" type="STRING"/>
+                    <log level="custom">
+                        <property name="status" value="AccountVerificationValidationSuccess"/>
+                        <property expression="$ctx:requestBody" name="XmlStringRaw"/>
+                    </log>
+                    <log level="custom">
+                        <property name="filePropertyChecker" value="filePropertyChecker::::::"/>
+                        <property expression="get-property('file', 'keystoreFile')" name="keystoreFile"/>
+                    </log>
+                    <property expression="get-property('file', 'keystoreFile')" name="keystoreFile" scope="default" type="STRING"/>
+                    <class name="ipsl.signature.Test">
+                        <property expression="$ctx:XmlStringRaw" name="XmlStringRaw"/>
+                        <property name="keystoreFile" value="C:/Softwares/Applications/wso2mi-4.2.0/repository/resources/security/client-truststore.jks"/>
+                        <property name="keystorePass" value="1gObh6cpP3IT"/>
+                        <property name="keystoreAlias" value="ipslv3"/>
+                    </class>
+                    <property expression="get-property('output')" name="response" scope="default" type="STRING"/>
+                    <log level="custom">
+                        <property expression="get-property('output')" name="response#############"/>
+                    </log>
+                    <class name="mpesaCustom.IpslClient">
+                        <property expression="$ctx:response" name="xmlPayload"/>
+                        <property name="keystorePath" value="C:/Softwares/Applications/wso2mi-4.2.0/wso2mi-4.2.0/repository/resources/security/client-truststore.jks"/>
+                        <property name="keystorePassword" value="1gObh6cpP3IT"/>
+                        <property name="alias" value="ipslv3"/>
+                        <property name="contentType" value="application/xml"/>
+                        <property name="apiEndpoint" value="https://api.stage.pesalink.co.ke/iso20022/sync/v1/verification-request"/>
+                    </class>
+                    <property expression="get-property('backendResponse')" name="backendResponse" scope="default" type="STRING"/>
+                    <property expression="get-property('responseCode')" name="responseCode" scope="default" type="STRING"/>
+                    <log level="custom">
+                        <property expression="get-property('backendResponse')" name="backendResponse"/>
+                        <property expression="get-property('responseCode')" name="responseCode"/>
+                    </log>
+                    <property expression="get-property('backendResponse')" name="rawRequestMsg" scope="default" type="STRING"/>
+                    <class name="mpesaCustom.Replacingxml"/>
+                    <property expression="get-property('response')" name="response" scope="default" type="STRING"/>
+                    <log level="custom">
+                        <property expression="get-property('response')" name="response"/>
+                    </log>
+                    <filter regex="200" source="$ctx:responseCode">
+                        <then>
+                            <payloadFactory media-type="xml">
+                                <format>
+                                    <reponse>  $1</reponse>
+                                </format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('response')"/>
+                                </args>
+                            </payloadFactory>
+                        </then>
+                        <else>
+                            <payloadFactory media-type="xml">
+                                <format>
+                                    <reponse>  $1</reponse>
+                                </format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('response')"/>
+                                </args>
+                            </payloadFactory>
+                        </else>
+                    </filter>
+                </then>
+                <else>
+                    <log level="full">
+                        <property name="status" value="AccountVerificationValidationFailed"/>
+                    </log>
+                </else>
+            </filter>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="full">
+                <property name="Faulkt" value="AccountVerificationValidationFailed"/>
+            </log>
+        </faultSequence>
+    </resource>
+</api>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="XSLTTransformation" xmlns="http://ws.apache.org/ns/synapse">
+    <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output indent="yes" method="xml" omit-xml-declaration="yes"/>
+        <xsl:template match="/">
+            <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://types.ws.gw.fcubs.iflex.com">
+                <soapenv:Header/>
+                <soapenv:Body>
+                    <typ:CreateTransaction>
+                        <xsl:text disable-output-escaping="no">&lt;![CDATA[</xsl:text>
+                        <xsl:copy-of select="*"/>
+                        <xsl:text disable-output-escaping="no">]]&gt;</xsl:text>
+                    </typ:CreateTransaction>
+                </soapenv:Body>
+            </soapenv:Envelope>
+        </xsl:template>
+    </xsl:stylesheet>
+</localEntry>

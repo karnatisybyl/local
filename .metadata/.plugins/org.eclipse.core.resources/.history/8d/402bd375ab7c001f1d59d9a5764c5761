@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/transactionstatus" name="MpesaTransactionStatusAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/result">
+        <inSequence>
+            <log level="full">
+                <property name="Message" value="Extracting properties from client request"/>
+            </log>
+            <!-- Extract Client Request Data into Properties -->
+            <property expression="//tns:spId" name="spId" scope="default" type="STRING" xmlns:tns="http://www.huawei.com/schema/osg/common/v2_1"/>
+            <property expression="//tns:spPassword" name="spPassword" scope="default" type="STRING" xmlns:tns="http://www.huawei.com/schema/osg/common/v2_1"/>
+            <property expression="//tns:serviceId" name="serviceId" scope="default" type="STRING" xmlns:tns="http://www.huawei.com/schema/osg/common/v2_1"/>
+            <property expression="//tns:timeStamp" name="timeStamp" scope="default" type="STRING" xmlns:tns="http://www.huawei.com/schema/osg/common/v2_1"/>
+            <!-- Define properties -->
+            <property expression="//req:RequestMsg" name="requestMsg" scope="default" type="STRING" xmlns:req="http://api-v1.gen.mm.vodafone.com/mminterface/request"/>
+            <property name="lt" scope="default" type="STRING" value="&lt;"/>
+            <property name="gt" scope="default" type="STRING" value=">"/>
+            <property name="cdata_start" scope="default" type="STRING" value="![CDATA["/>
+            <property name="cdata_end" scope="default" type="STRING" value="]]"/>
+            <!-- Concatenate CDATA with requestMsg -->
+            <property expression="fn:concat(&lt;, '![CDATA[', $requestMsg, ']]', >)" name="finalRequest" scope="default" type="STRING"/>
+            <!-- Construct the Backend SOAP Request -->
+            <payloadFactory media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:req="http://api-v1.gen.mm.vodafone.com/mminterface/request" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                        <soapenv:Header>
+                            <tns:RequestSOAPHeader xmlns:tns="http://www.huawei.com/schema/osg/common/v2_1">
+                                <tns:spId>$1</tns:spId>
+                                <tns:spPassword>$2</tns:spPassword>
+                                <tns:serviceId>$3</tns:serviceId>
+                                <tns:timeStamp>$4</tns:timeStamp>
+                            </tns:RequestSOAPHeader>
+                        </soapenv:Header>
+                        <soapenv:Body>
+                            <req:RequestMsg>$5&gt;</req:RequestMsg>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('spId')"/>
+                    <arg evaluator="xml" expression="get-property('spPassword')"/>
+                    <arg evaluator="xml" expression="get-property('serviceId')"/>
+                    <arg evaluator="xml" expression="get-property('timeStamp')"/>
+                    <arg evaluator="xml" expression="get-property('finalRequest')"/>
+                </args>
+            </payloadFactory>
+            <!-- Log the constructed SOAP request -->
+            <log level="full">
+                <property name="Message" value="Constructed Backend SOAP Request"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/timeout">
+        <inSequence>
+            <log level="full">
+                <property name="Transaction Timeout Callback" value="Received Timeout Callback"/>
+            </log>
+            <!-- Extracting and logging timeout details -->
+            <property expression="json-eval($.OriginatorConversationID)" name="OriginatorConversationID" scope="default" type="STRING"/>
+            <property expression="json-eval($.ResultCode)" name="ResultCode" scope="default" type="STRING"/>
+            <property expression="json-eval($.ResultDesc)" name="ResultDesc" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('OriginatorConversationID')" name="OriginatorConversationID"/>
+                <property expression="get-property('ResultCode')" name="ResultCode"/>
+                <property expression="get-property('ResultDesc')" name="ResultDesc"/>
+            </log>
+            <!-- Return timeout response -->
+            <payloadFactory media-type="json">
+                <format>{"status": "Timeout", "message": "Transaction timed out", "conversationID": "$1"}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('OriginatorConversationID')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/mainApi">
+        <inSequence>
+            <!-- Log the incoming request for debugging -->
+            <log level="full">
+                <property name="Received Request" value="Transaction Status Request"/>
+                <property expression="get-property('json')" name="Request Payload"/>
+            </log>
+            <!-- Extract required fields from the incoming request -->
+            <property expression="json-eval($.TransactionID)" name="TransactionID" scope="default" type="STRING"/>
+            <property expression="json-eval($.Initiator)" name="Initiator" scope="default" type="STRING"/>
+            <property expression="json-eval($.OriginatorConversationID)" name="OriginatorConversationID" scope="default" type="STRING"/>
+            <!-- Create the payload for M-PESA API -->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "Initiator": "$1",
+                        "SecurityCredential": "Your_Security_Credential_Here",
+                        "CommandID": "TransactionStatusQuery",
+                        "TransactionID": "$2",
+                        "OriginatorConversationID": "$3",
+                        "PartyA": "600782",
+                        "IdentifierType": "4",
+                        "ResultURL": "http://localhost:8290/transactionstatus/result",
+                        "QueueTimeOutURL": "http://localhost:8290/timeout",
+                        "Remarks": "OK",
+                        "Occasion": "OK"
+                    }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('Initiator')"/>
+                    <arg evaluator="xml" expression="get-property('TransactionID')"/>
+                    <arg evaluator="xml" expression="get-property('OriginatorConversationID')"/>
+                </args>
+            </payloadFactory>
+            <!-- Send request to M-PESA Transaction Status API 
+            <call>
+                <endpoint key="MpesaTransactionStatusEndpoint"/>
+            </call>-->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+{
+  "OriginatorConversationID": "2e49-42fe-9d40-bf4b36f202bb80390",
+  "ConversationID": "AG_20240916_20105157d0d6b662d4cd",
+  "ResponseCode": "0",
+  "ResponseDescription": "Accept the service request successfully."
+}
+          
+           </format>
+                <args/>
+            </payloadFactory>
+            <!-- Log the response for debugging -->
+            <log level="full">
+                <property expression="get-property('json')" name="M-PESA Response"/>
+            </log>
+            <!-- Respond back to the client -->
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="full">
+                <property name="Error" value="Error occurred while processing the request"/>
+                <property expression="get-property('ERROR_MESSAGE')" name="ERROR_MESSAGE"/>
+            </log>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <!-- Resource for ResultURL (success callback) -->
+    <!-- Resource for QueueTimeOutURL (timeout callback) -->
+    <!-- Optional resource to handle general cases (for testing or other operations) -->
+</api>

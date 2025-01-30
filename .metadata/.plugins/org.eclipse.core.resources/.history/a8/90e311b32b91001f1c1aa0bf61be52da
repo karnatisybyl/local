@@ -1,0 +1,47 @@
+package ipsl.signature;
+
+import java.io.FileInputStream;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import javax.crypto.Cipher;
+
+public class PasswordEncryption {
+
+    public static void main(String[] args) {
+        try {
+            // Step 1: Load the public key from the X.509 certificate
+            String certPath = "C:\\Softwares\\DOCS\\FBL\\MPESABroker\\testbroker.crt"; // Update this with your certificate path
+            PublicKey publicKey = loadPublicKey(certPath);
+            
+            // Step 2: Encrypt the password
+            String unencryptedPassword = "Safaricom123!"; // Replace with the actual password
+            byte[] encryptedPassword = encryptPassword(publicKey, unencryptedPassword);
+            
+            // Step 3: Base64 encode the encrypted password
+            String base64EncodedCredential = Base64.getEncoder().encodeToString(encryptedPassword);
+            
+            // Output the result
+            System.out.println("Base64 Encoded SecurityCredential: " + base64EncodedCredential);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static PublicKey loadPublicKey(String certPath) throws Exception {
+        FileInputStream fis = new FileInputStream(certPath);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate certificate = (X509Certificate) cf.generateCertificate(fis);
+        return certificate.getPublicKey();
+    }
+
+    private static byte[] encryptPassword(PublicKey publicKey, String password) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // Specify RSA with PKCS #1.5 padding
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        return cipher.doFinal(password.getBytes("UTF-8")); // Encrypt the password
+    }
+}
+

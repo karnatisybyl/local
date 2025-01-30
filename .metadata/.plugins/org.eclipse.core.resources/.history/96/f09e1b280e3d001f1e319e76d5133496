@@ -1,0 +1,163 @@
+{
+  "$schema" : "http://wso2.org/json-schema/wso2-data-mapper-v5.0.0/schema#",
+  "inputType" : "JSON",
+  "id" : "http://wso2jsonschema.org",
+  "title" : "root",
+  "type" : "object",
+  "properties" : {
+    "payInstalment" : {
+      "id" : "http://wso2jsonschema.org/payInstalment",
+      "type" : "object",
+      "properties" : {
+        "sessionContext" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/sessionContext",
+          "type" : "object",
+          "properties" : {
+            "bankCode" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/bankCode",
+              "type" : "number"
+            },
+            "channel" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/channel",
+              "type" : "string"
+            },
+            "externalBatchNumber" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/externalBatchNumber",
+              "type" : "number"
+            },
+            "externalReferenceNo" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/externalReferenceNo",
+              "type" : "string"
+            },
+            "externalSystemAuditTrailNumber" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/externalSystemAuditTrailNumber",
+              "type" : "number"
+            },
+            "localDateTimeText" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/localDateTimeText",
+              "type" : "string"
+            },
+            "originalReferenceNo" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/originalReferenceNo",
+              "type" : "string"
+            },
+            "overridenWarnings" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/overridenWarnings",
+              "type" : "string"
+            },
+            "postingDateText" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/postingDateText",
+              "type" : "string"
+            },
+            "reason" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/reason",
+              "type" : "object",
+              "properties" : {
+                "comment" : {
+                  "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/reason/comment",
+                  "type" : "string"
+                },
+                "reasonCode" : {
+                  "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/reason/reasonCode",
+                  "type" : "number"
+                }
+              }
+            },
+            "serviceCode" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/serviceCode",
+              "type" : "string"
+            },
+            "sessionTicket" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/sessionTicket",
+              "type" : "string"
+            },
+            "supervisorContext" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/supervisorContext",
+              "type" : "object",
+              "properties" : {
+                "primaryPassword" : {
+                  "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/supervisorContext/primaryPassword",
+                  "type" : "string"
+                },
+                "userId" : {
+                  "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/supervisorContext/userId",
+                  "type" : "string"
+                }
+              }
+            },
+            "transactionBranch" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/transactionBranch",
+              "type" : "number"
+            },
+            "userId" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/userId",
+              "type" : "string"
+            },
+            "userReferenceNumber" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/userReferenceNumber",
+              "type" : "string"
+            },
+            "valueDateText" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/sessionContext/valueDateText",
+              "type" : "string"
+            }
+          }
+        },
+        "loanAccountId" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/loanAccountId",
+          "type" : "string"
+        },
+        "accountID" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/accountID",
+          "type" : "number"
+        },
+        "loanAcctAmount" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/loanAcctAmount",
+          "type" : "number"
+        },
+        "GLccyShortName" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/GLccyShortName",
+          "type" : "string"
+        },
+        "narrative" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/narrative",
+          "type" : "string"
+        },
+        "flgInstallmentType" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/flgInstallmentType",
+          "type" : "number"
+        },
+        "transactionType" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/transactionType",
+          "type" : "number"
+        },
+        "extendedReferenceNoDTO" : {
+          "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO",
+          "type" : "object",
+          "properties" : {
+            "extRefNo1" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO/extRefNo1",
+              "type" : "number"
+            },
+            "extRefNo2" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO/extRefNo2",
+              "type" : "number"
+            },
+            "extRefNo3" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO/extRefNo3",
+              "type" : "number"
+            },
+            "extRefNo4" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO/extRefNo4",
+              "type" : "number"
+            },
+            "refCustomerNo" : {
+              "id" : "http://wso2jsonschema.org/payInstalment/extendedReferenceNoDTO/refCustomerNo",
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

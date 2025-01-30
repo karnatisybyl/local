@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression=" //*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression=" //*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression=" //*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm"/>
+                <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm"/>
+                <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt"/>
+                <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb"/>
+                <property expression=" //*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb"/>
+            </log>
+            <script language="js"><![CDATA[script_code]]></script>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

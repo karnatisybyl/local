@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="XSLTTransformation" xmlns="http://ws.apache.org/ns/synapse">
+    <xsl:stylesheet exclude-result-prefixes="xs open ser mvp" version="1.0" xmlns:mvp="http://eai.mtn.iran/mvpnservice" xmlns:open="http://www.openuri.org/" xmlns:ser="http://eai.mtn.iran/ServiceProvision" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output cdata-section-elements="" encoding="UTF-8" indent="yes" method="xml" omit-xml-declaration="yes"/>
+        <xsl:strip-space elements="*"/>
+        <xsl:template match="@* | node()">
+            <xsl:copy>
+                <xsl:apply-templates select="@* | node()"/>
+            </xsl:copy>
+        </xsl:template>
+        <xsl:template match="value">
+            <xsl:apply-templates select="text()"/>
+        </xsl:template>
+        <xsl:template match="text()[contains(., '&lt;EVENT>')]">
+            <xsl:value-of disable-output-escaping="yes" select="substring-before(substring-after(., '&lt;EVENT>'),                 '&lt;/EVENT>')"/>
+        </xsl:template>
+    </xsl:stylesheet>
+</localEntry>

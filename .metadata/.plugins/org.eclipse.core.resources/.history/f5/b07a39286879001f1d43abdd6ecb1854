@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/api/mpesa/callback" name="MPESACallbackAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaTransactionQueryInSeq" methods="POST" outSequence="DarajaTransactionQueryOutSeq" url-mapping="/getTransactionQueryResult"/>
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaB2bResultInSeq" methods="POST" outSequence="DarajaB2bResultOutSeq" url-mapping="/getDarajaB2bResult"/>
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaC2bConfirmationInSeq" methods="POST" outSequence="DarajaC2bConfirmationOutSeq" url-mapping="/getC2bConfirmation"/>
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaC2bValidationInSeq" methods="POST" outSequence="DarajaC2bValidationOutSeq" url-mapping="/getC2bValidation"/>
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaReversalResultInSeq" methods="POST" outSequence="DarajaReversalResultOutSeq" url-mapping="/getReversalResult"/>
+    <resource faultSequence="MPESACallbackAPISFaultSeq" inSequence="DarajaB2cResultInSeq" methods="POST" outSequence="DarajaB2cResultOutSeq" url-mapping="/getB2cResult"/>
+</api>

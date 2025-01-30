@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/transactionstatus" name="MpesaTransactionStatusAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/result">
+        <inSequence>
+            <header action="remove" name="Content-Encoding" scope="transport"/>
+            <log level="full">
+                <property name="Transaction Status Callback" value="Received Result Callback"/>
+            </log>
+            <!-- Extracting and logging result details -->
+            <property expression="json-eval($.Result.ResultCode)" name="ResultCode" scope="default" type="STRING"/>
+            <property expression="json-eval($.Result.ResultDesc)" name="ResultDesc" scope="default" type="STRING"/>
+            <property expression="json-eval($.Result.ResultParameters.ResultParameter[0].Value)" name="TransactionID" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('ResultCode')" name="ResultCode"/>
+                <property expression="get-property('ResultDesc')" name="ResultDesc"/>
+                <property expression="get-property('TransactionID')" name="TransactionID"/>
+            </log>
+            <!-- Return success response -->
+            <payloadFactory media-type="json">
+                <format>{"status": "Success", "message": "Result received and processed", "transactionID": "$1"}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('TransactionID')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/timeout">
+        <inSequence>
+            <log level="full">
+                <property name="Transaction Timeout Callback" value="Received Timeout Callback"/>
+            </log>
+            <!-- Extracting and logging timeout details -->
+            <property expression="json-eval($.OriginatorConversationID)" name="OriginatorConversationID" scope="default" type="STRING"/>
+            <property expression="json-eval($.ResultCode)" name="ResultCode" scope="default" type="STRING"/>
+            <property expression="json-eval($.ResultDesc)" name="ResultDesc" scope="default" type="STRING"/>
+            <log level="full">
+                <property expression="get-property('OriginatorConversationID')" name="OriginatorConversationID"/>
+                <property expression="get-property('ResultCode')" name="ResultCode"/>
+                <property expression="get-property('ResultDesc')" name="ResultDesc"/>
+            </log>
+            <!-- Return timeout response -->
+            <payloadFactory media-type="json">
+                <format>{"status": "Timeout", "message": "Transaction timed out", "conversationID": "$1"}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('OriginatorConversationID')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/mainApi">
+        <inSequence>
+            <!-- Log the incoming request for debugging -->
+            <log level="full">
+                <property name="Received Request" value="Transaction Status Request"/>
+                <property expression="get-property('json')" name="Request Payload"/>
+            </log>
+            <!-- Extract required fields from the incoming request -->
+            <property expression="json-eval($.TransactionID)" name="TransactionID" scope="default" type="STRING"/>
+            <property expression="json-eval($.Initiator)" name="Initiator" scope="default" type="STRING"/>
+            <property expression="json-eval($.OriginatorConversationID)" name="OriginatorConversationID" scope="default" type="STRING"/>
+            <!-- Create the payload for M-PESA API -->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "Initiator": "$1",
+                        "SecurityCredential": "Your_Security_Credential_Here",
+                        "CommandID": "TransactionStatusQuery",
+                        "TransactionID": "$2",
+                        "OriginatorConversationID": "$3",
+                        "PartyA": "600782",
+                        "IdentifierType": "4",
+                        "ResultURL": "http://localhost:8290/transactionstatus/result",
+                        "QueueTimeOutURL": "http://localhost:8290/timeout",
+                        "Remarks": "OK",
+                        "Occasion": "OK"
+                    }
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('Initiator')"/>
+                    <arg evaluator="xml" expression="get-property('TransactionID')"/>
+                    <arg evaluator="xml" expression="get-property('OriginatorConversationID')"/>
+                </args>
+            </payloadFactory>
+            <!-- Send request to M-PESA Transaction Status API 
+            <call>
+                <endpoint key="MpesaTransactionStatusEndpoint"/>
+            </call>-->
+            <payloadFactory media-type="json">
+                <format>
+                    {
+{
+  "OriginatorConversationID": "2e49-42fe-9d40-bf4b36f202bb80390",
+  "ConversationID": "AG_20240916_20105157d0d6b662d4cd",
+  "ResponseCode": "0",
+  "ResponseDescription": "Accept the service request successfully."
+}
+          
+           </format>
+                <args/>
+            </payloadFactory>
+            <!-- Log the response for debugging -->
+            <log level="full">
+                <property expression="get-property('json')" name="M-PESA Response"/>
+            </log>
+            <!-- Respond back to the client -->
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log level="full">
+                <property name="Error" value="Error occurred while processing the request"/>
+                <property expression="get-property('ERROR_MESSAGE')" name="ERROR_MESSAGE"/>
+            </log>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <!-- Resource for ResultURL (success callback) -->
+    <!-- Resource for QueueTimeOutURL (timeout callback) -->
+    <!-- Optional resource to handle general cases (for testing or other operations) -->
+</api>

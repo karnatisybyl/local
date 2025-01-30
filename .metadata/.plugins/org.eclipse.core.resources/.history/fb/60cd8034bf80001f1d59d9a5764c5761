@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localEntry key="XSLTTransformation" xmlns="http://ws.apache.org/ns/synapse">
+    <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output indent="yes" method="xml" omit-xml-declaration="yes"/>
+        <xsl:template match="/">
+            <root>
+                <xsl:copy>
+                    <xsl:text disable-output-escaping="yes">&lt;![CDATA[</xsl:text>
+                    <xsl:copy-of select="*"/>
+                    <xsl:text disable-output-escaping="yes">]]&gt;</xsl:text>
+                </xsl:copy>
+            </root>
+        </xsl:template>
+    </xsl:stylesheet>
+</localEntry>

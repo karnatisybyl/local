@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="dbInsertSequence" onError="Fault_Sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="SYST_DATE" scope="default" type="STRING" value="2024-10-28 00:00:00"/>
+    <property name="CREATOR" scope="default" type="STRING" value="DAYKIO_API"/>
+    <property name="AccountGl" scope="default" type="STRING" value="A01040002"/>
+    <property expression="get-property('ACCOUNT_NUMBER')" name="PROP_ACCOUNT_NUMBER" scope="default" type="STRING"/>
+    <property expression="$ctx:FormattedPhoneNumber" name="PROP_MOBILE_NUMBER" scope="default" type="STRING"/>
+    <property expression="json-eval($.RequestReference)" name="PROP_REQUEST_REFERENCE" scope="default" type="STRING"/>
+    <log level="custom">
+        <property expression="get-property('BNS_NAME')" name="Business Name in dbsep"/>
+        <property expression="get-property('PROP_ACCOUNT_NUMBER')" name="Account Number in dbseq"/>
+        <property expression="substring(get-property('PROP_ACCOUNT_NUMBER'), 1, 3)" name="Branch in dbseq"/>
+        <property expression="get-property('PROP_MOBILE_NUMBER')" name="Mobile Number in dbseq"/>
+        <property expression="get-property('SYST_DATE')" name="SYST_DATE before DB"/>
+    </log>
+    <!-- Generate Unique Identifier for transaction -->
+    <script description="UniqueID" language="js"><![CDATA[var log = mc.getServiceLog();
+// encode a string in Base64
+function base64Encode(str) {
+    var base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var output = "";
+    var i = 0;
+
+    while (i < str.length) {
+        var char1 = str.charCodeAt(i++) & 0xff;
+        if (i == str.length) {
+            output += base64Chars.charAt(char1 >> 2);
+            output += base64Chars.charAt((char1 & 0x03) << 4);
+            output += "==";
+            break;
+        }
+        var char2 = str.charCodeAt(i++);
+        if (i == str.length) {
+            output += base64Chars.charAt(char1 >> 2);
+            output += base64Chars.charAt((char1 & 0x03) << 4 | (char2 & 0xf0) >> 4);
+            output += base64Chars.charAt((char2 & 0x0f) << 2);
+            output += "=";
+            break;
+        }
+        var char3 = str.charCodeAt(i++);
+        output += base64Chars.charAt(char1 >> 2);
+        output += base64Chars.charAt((char1 & 0x03) << 4 | (char2 & 0xf0) >> 4);
+        output += base64Chars.charAt((char2 & 0x0f) << 2 | (char3 & 0xc0) >> 6);
+        output += base64Chars.charAt(char3 & 0x3f);
+    }
+    return output;
+}
+
+// generate a random unique identifier
+function generateUniqueId() {
+    var timestamp = new Date().getTime();
+    var randomPart = Math.random().toString(36).substr(2, 12);
+    var uniqueId = base64Encode(timestamp + randomPart);
+    return uniqueId;
+}
+
+
+var uniqueId = generateUniqueId();
+log.info("Unique ID in Script: " + uniqueId);
+mc.setProperty("UNIQUE_ID", uniqueId.toString());]]></script>
+    <log level="custom">
+        <property expression="get-property('UNIQUE_ID')" name="Unique Id Outside Script"/>
+    </log>
+    <!-- call the database here -->
+    <transaction action="use-existing-or-new"/>
+    <dbreport useTransaction="true">
+        <connection>
+            <pool>
+                <dsName>MainDbseq</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[
+		            DECLARE     
+		                p_PayBillDataId NUMBER;      
+		                p_StoreNumber VARCHAR2 (300);  
+		            BEGIN     
+		                Sp_OneTill_Data (        
+		                    p_BusinessName => ?,         
+		                    p_AccountNumber => ?,         
+		                    p_Branch => ?,         
+		                    p_TillNumber => ?,         
+		                    p_UniqueKey => ?,         
+		                    p_ValidationType => ?,         
+		                    p_AccountGl => ?,         
+		                    p_IsEnabled => ?,         
+		                    p_AccessMerchantPortal => ?,         
+		                    p_CustomerContact => ?,         
+		                    p_CustomerName => ?,         
+		                    p_PhoneNumber => ?,         
+		                    p_Email => ?,         
+		                    p_IsStraightThroughPostingEnabled => ?,         
+		                    p_IPNDataFormat => ?,         
+		                    p_PayRollNumber => ?,         
+		                    p_StaffRole => ?,         
+		                    p_BranchCategory => ?,         
+		                    p_CreatedBy => ?,         
+		                    p_RecordStatus => ?,         
+		                    p_CreatedAt => ?,         
+		                    p_ModifiedAt => ?,
+		                    p_UniqueIdentifier => ?,        
+		                    p_PayBillDataId => p_PayBillDataId,         
+		                    p_StoreNumber => p_StoreNumber    
+		                );  
+		            END;
+		        ]]></sql>
+            <parameter expression="get-property('BNS_NAME')" type="VARCHAR"/>
+            <parameter expression="get-property('PROP_ACCOUNT_NUMBER')" type="VARCHAR"/>
+            <parameter expression="substring(get-property('PROP_ACCOUNT_NUMBER'), 1, 3)" type="VARCHAR"/>
+            <parameter expression="222111" type="NUMERIC"/>
+            <parameter expression="null" type="VARCHAR"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="get-property('AccountGl')" type="VARCHAR"/>
+            <parameter expression="1" type="NUMERIC"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="get-property('PROP_MOBILE_NUMBER')" type="VARCHAR"/>
+            <parameter expression="get-property('BNS_NAME')" type="VARCHAR"/>
+            <parameter expression="get-property('PROP_MOBILE_NUMBER')" type="VARCHAR"/>
+            <parameter expression="null" type="VARCHAR"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="0" type="NUMERIC"/>
+            <parameter expression="get-property('CREATOR')" type="VARCHAR"/>
+            <parameter expression="2" type="NUMERIC"/>
+            <parameter expression="get-property('SYST_DATE')" type="TIMESTAMP"/>
+            <parameter expression="get-property('SYST_DATE')" type="TIMESTAMP"/>
+            <parameter expression="get-property('UNIQUE_ID')" type="VARCHAR"/>
+            <result column="p_PayBillDataId" name="Pay_Bill_Data_ID"/>
+            <result column="p_StoreNumber" name="Store_Number"/>
+        </statement>
+    </dbreport>
+    <transaction action="commit"/>
+    <!-- Get results here and log -->
+    <dblookup description="Get results">
+        <connection>
+            <pool>
+                <dsName>MainDbseq</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[SELECT  onetill_dataid, StoreNumber FROM OneTill_Data WHERE UniqueId = ?]]></sql>
+            <parameter expression="get-property('UNIQUE_ID')" type="VARCHAR"/>
+            <result column="onetill_dataid" name="RetrievedPayBillDataId"/>
+            <result column="StoreNumber" name="RetrievedStoreNumber"/>
+        </statement>
+    </dblookup>
+    <!-- Logging the results to verify -->
+    <log level="custom">
+        <property expression="get-property('RetrievedPayBillDataId')" name="Retrieved PayBillDataId"/>
+        <property expression="get-property('RetrievedStoreNumber')" name="Retrieved StoreNumber"/>
+    </log>
+    <filter xpath="get-property('RetrievedPayBillDataId') != 0">
+        <then>
+            <payloadFactory media-type="json">
+                <format>{
+				"LnfCode": "$1",&#xd;		
+				"ResponseCode": "$2",&#xd;		 
+				"RequestReference": "$3"
+				}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('RetrievedStoreNumber')"/>
+                    <arg evaluator="xml" expression="get-property('RetrievedPayBillDataId')"/>
+                    <arg evaluator="xml" expression="get-property('REQ_REF')"/>
+                </args>
+            </payloadFactory>
+        </then>
+        <else>
+            <sequence key="Fault_Sequence"/>
+        </else>
+    </filter>
+</sequence>

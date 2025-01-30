@@ -1,0 +1,107 @@
+package ipsl.signature;
+
+
+import org.apache.synapse.MessageContext;
+import org.apache.synapse.mediators.AbstractMediator;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class MpesaBtCMediator extends AbstractMediator {
+
+    @Override
+    public boolean mediate(MessageContext context) {
+        try {
+            // Get the dynamic property 'fcubs_req_env' from WSO2 MI
+            String fcubsReqEnv = (String) context.getProperty("fcubs_req_env");
+
+            // Generate the dynamic SOAP payload
+            String soapPayload = frameSOAPPayload(fcubsReqEnv);
+
+            // URL of the backend service (Can be dynamic or static as per your use case)
+            String url = "http://172.16.10.239:8181/FCUBSRTService/FCUBSRTService";
+
+            // Send the SOAP request and capture the backend response
+            String backendResponse = sendSOAPRequest(url, soapPayload);
+
+            // Check if the response is successful
+            if (context.getProperty("responseCode").equals(200)) {
+                // Set success properties in WSO2 MI context
+                context.setProperty("isSuccess", true);
+                context.setProperty("backendResponse", backendResponse);
+                log.info("Request successful. Response: " + backendResponse);
+            } else {
+                // Set failure properties in WSO2 MI context
+                context.setProperty("isSuccess", false);
+                context.setProperty("errorResponse", backendResponse);
+                log.error("Request failed. Error: " + backendResponse);
+            }
+
+            return true; // Continue mediation
+
+        } catch (Exception e) {
+            // Handle any errors and set the error message in the context
+            context.setProperty("isSuccess", false);
+            context.setProperty("errorMessage", e.getMessage());
+            log.error("Error occurred: " + e.getMessage(), e);
+            return false; // Stop mediation in case of error
+        }
+    }
+
+    // Method to dynamically frame the SOAP payload based on input
+    private String frameSOAPPayload(String fcubsReqEnv) {
+        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+               "xmlns:typ=\"http://types.ws.gw.fcubs.iflex.com\">" +
+               "   <soapenv:Header/>" +
+               "   <soapenv:Body>" +
+               "      <typ:CreateTransaction>" + fcubsReqEnv + "</typ:CreateTransaction>" +
+               "   </soapenv:Body>" +
+               "</soapenv:Envelope>";
+    }
+
+    // Method to send the SOAP request to the backend and return the response
+    private String sendSOAPRequest(String urlString, String soapPayload) throws Exception {
+        // Create the URL object
+        URL url = new URL(urlString);
+
+        // Open a connection to the URL
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        // Set HTTP method to POST
+        conn.setRequestMethod("POST");
+
+        // Set headers for SOAP content
+        conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+        conn.setRequestProperty("SOAPAction", "");
+
+        // Enable input and output streams
+        conn.setDoOutput(true);
+
+        // Write the SOAP payload to the output stream
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = soapPayload.getBytes("UTF-8");
+            os.write(input, 0, input.length);
+        }
+
+        // Get the response code to confirm the request was successful
+        int responseCode = conn.getResponseCode();
+        context.setProperty("responseCode", responseCode);
+
+        // Read the response from the backend
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        // Return the response as a string
+        return response.toString();
+    }
+}
+

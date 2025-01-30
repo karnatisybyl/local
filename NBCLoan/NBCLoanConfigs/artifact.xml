@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="loanPartialPayoffAPI" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/loanPartialPayoffAPI.xml</file>
+    </artifact>
+    <artifact name="loanPartialPayoffAPI_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/loanPartialPayoffAPI_swagger.yaml</file>
+    </artifact>
+    <artifact name="loanPartialPayoffAPI_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/loanPartialPayoffAPI_metadata.yaml</file>
+    </artifact>
+    <artifact name="partialpayOffShema" groupId="com.example.local-entry" version="1.0.0" type="synapse/local-entry" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/local-entries/partialpayOffShema.xml</file>
+    </artifact>
+    <artifact name="LoanPayOff_EP" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/LoanPayOff_EP.xml</file>
+    </artifact>
+    <artifact name="custom_fault_sequence" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/custom_fault_sequence.xml</file>
+    </artifact>
+    <artifact name="TransactionApi" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/TransactionApi.xml</file>
+    </artifact>
+    <artifact name="TransactionApi_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/TransactionApi_swagger.yaml</file>
+    </artifact>
+    <artifact name="TransactionApi_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/TransactionApi_metadata.yaml</file>
+    </artifact>
+</artifacts>

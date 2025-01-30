@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/payInstalment" name="PayInstalmentAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="PayInstalmentFaultSequence" inSequence="PayInstalmentInSequence" methods="POST" outSequence="PayInstalmentOutSequence" url-mapping="/payinstalment"/>
+    <resource faultSequence="PayInstalmentFaultSequence" methods="POST" url-mapping="/partialpayoffApi">
+        <inSequence/>
+        <outSequence/>
+    </resource>
+</api>

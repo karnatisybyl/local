@@ -1,0 +1,11 @@
+---
+key: "retrieveCardsbyAccountNo-1.0.0"
+name : "retrieveCardsbyAccountNo"
+displayName : "retrieveCardsbyAccountNo"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/{country}/api/v1/accounts"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

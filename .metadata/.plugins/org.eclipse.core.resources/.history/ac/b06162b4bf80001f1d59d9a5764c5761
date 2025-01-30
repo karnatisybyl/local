@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy name="btc" startOnLoad="true" transports="http https" xmlns="http://ws.apache.org/ns/synapse">
+    <target>
+        <inSequence>
+            <log level="full">
+                <property name="INFO" value="Received client request"/>
+                <property expression="//*[local-name()='Body']/*[local-name()='CreateTransaction']/*" name="fcubs_req_env"/>
+            </log>
+            <xslt key="gov:custom/Mpesa.xslt">
+                <property expression="//*[local-name()='Body']/*[local-name()='CreateTransaction']/*" name="fcubs_req_env"/>
+            </xslt>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </target>
+</proxy>

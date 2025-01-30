@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="customDBSequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="host" scope="default" type="STRING" value="172.16.10.161"/>
+    <property name="port" scope="default" type="STRING" value="1521"/>
+    <property name="dbname" scope="default" type="STRING" value="FBLORADBUAT"/>
+    <property name="userName" scope="default" type="STRING" value="WSO2_USER"/>
+    <property name="password" scope="default" type="STRING" value="WS02ADM1N"/>
+    <property name="driverClass" scope="default" type="STRING" value="oracle.jdbc.OracleDriver"/>
+    <class name="uol.db.CustomDBMediator"/>
+    <property expression="get-property('Result')" name="queryResult" scope="default" type="STRING"/>
+    <payloadFactory media-type="json">
+        <format>$1</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:queryResult"/>
+        </args>
+    </payloadFactory>
+</sequence>

@@ -1,0 +1,483 @@
+package XMLSignatureTestProject;
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.crypto.dsig.DigestMethod;
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.SignatureMethod;
+import javax.xml.crypto.dsig.SignedInfo;
+import javax.xml.crypto.dsig.Transform;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.keyinfo.KeyInfo;
+import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.X509Data;
+import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
+import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+public class Dsign {
+
+	protected static String typAlgorithm = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
+	protected static String canAlgorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+	protected static String digAlgorithm = "http://www.w3.org/2001/04/xmlenc#sha256";
+	protected static String sigAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+
+	protected static boolean omitDec = true;
+	protected static boolean indent = false;
+
+	public static String generateSignature(String rawXml, String keystorePath, String keystorePws) {
+
+		return "";
+	}
+
+	public static KeyStore loadKeyStore(String keystoreFile, String keystorePass) throws Exception {
+		KeyStore keyStore = null;
+
+		if (keystoreFile == null || keystoreFile.length() == 0) {
+			return keyStore;
+		}
+
+		System.out.println(keystoreFile);
+		InputStream is = openResource(keystoreFile);
+		if (is == null) {
+			System.out.println("null ks");
+			return keyStore;
+		}
+
+		if (keystorePass == null)
+			keystorePass = "";
+
+		if (keystoreFile.endsWith(".p12")) {
+			keyStore = KeyStore.getInstance("PKCS12", "BC");
+		} else {
+			keyStore = KeyStore.getInstance("JKS");
+		}
+		keyStore.load(is, keystorePass.toCharArray());
+
+		return keyStore;
+	}
+
+	public static InputStream openResource(String fileName) throws Exception {
+		if (fileName == null || fileName.length() == 0) {
+			return null;
+		}
+		if (fileName.startsWith("/") || fileName.indexOf(':') > 0) {
+			return new FileInputStream(fileName);
+		}
+		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);
+		if (url == null)
+			return null;
+		return url.openStream();
+	}
+
+	public static PrivateKey loadPrivateKey(String keystoreAlias, KeyStore keyStore, String keystorePass)
+			throws Exception {
+
+		PrivateKey privateKey = null;
+
+		Key aliasKey = keyStore.getKey(keystoreAlias, keystorePass.toCharArray());
+		if (aliasKey instanceof PrivateKey) {
+			privateKey = (PrivateKey) aliasKey;
+		}
+
+		return privateKey;
+
+	}
+
+	public static Certificate loadCertificate(String keystoreAlias, KeyStore keyStore, String keystorePass)
+			throws Exception {
+		Certificate certificate = null;
+
+		Certificate aliasCertificate = keyStore.getCertificate(keystoreAlias);
+
+		if (aliasCertificate instanceof X509Certificate) {
+			certificate = (X509Certificate) aliasCertificate;
+		}
+
+		return certificate;
+	}
+
+	public static String sign(String content, String keystoreFile, String keystorePass, String keystoreAlias)
+			throws Exception {
+
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		// BASIL ADDED BELOW
+		documentBuilderFactory.setNamespaceAware(true);
+
+		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		Document document = documentBuilder.parse(new ByteArrayInputStream(content.getBytes()));
+
+		KeyStore ks = loadKeyStore(keystoreFile, keystorePass);
+
+		XMLSignature xmlSignature = createXMLSignature(document, ks, keystorePass, keystoreAlias);
+
+		Element rootNode = document.getDocumentElement();
+
+		DOMSignContext domSignContext = new DOMSignContext(loadPrivateKey(keystoreAlias, ks, keystorePass), rootNode);
+		// BASIL ADDED BELOW
+		domSignContext.setDefaultNamespacePrefix("ds");
+		xmlSignature.sign(domSignContext);
+
+		return nodeToString(rootNode);
+	}
+
+	public static String nodeToString(Node node) throws Exception {
+		StringWriter stringWriter = new StringWriter();
+		try {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitDec ? "yes" : "no");
+			transformer.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+			transformer.transform(new DOMSource(node), new StreamResult(stringWriter));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		return stringWriter.toString();
+	}
+
+	public static XMLSignature createXMLSignature(Document document, KeyStore ks, String keystorePass,
+			String keystoreAlias) throws Exception {
+
+		XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM",
+				new org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI());
+		CanonicalizationMethod c14nMethod = xmlSignatureFactory.newCanonicalizationMethod(canAlgorithm,
+				(C14NMethodParameterSpec) null);
+		DigestMethod digestMethod = xmlSignatureFactory.newDigestMethod(digAlgorithm, null);
+		SignatureMethod signMethod = xmlSignatureFactory.newSignatureMethod(sigAlgorithm, null);
+		Transform sigTransform = xmlSignatureFactory.newTransform(typAlgorithm, (TransformParameterSpec) null);
+		Transform canTransform = xmlSignatureFactory.newTransform(canAlgorithm, (TransformParameterSpec) null);
+
+		List<Transform> transforms = new ArrayList<Transform>();
+		transforms.add(sigTransform);
+		transforms.add(canTransform);
+
+		String UNIQUE_GUID = UUID.randomUUID().toString();
+		String sQualifyingPropertiesId = "_" + UNIQUE_GUID;
+
+		Reference referenceDoc = xmlSignatureFactory.newReference("", digestMethod, transforms, null, null);
+		Reference referenceQuP = xmlSignatureFactory.newReference("#" + sQualifyingPropertiesId,
+				xmlSignatureFactory.newDigestMethod(digAlgorithm, null));
+
+		List<Reference> references = new ArrayList<Reference>();
+		references.add(referenceDoc);
+		references.add(referenceQuP);
+
+		SignedInfo signedInfo = xmlSignatureFactory.newSignedInfo(c14nMethod, signMethod, references);
+
+		KeyInfoFactory keyInfoFactory = xmlSignatureFactory.getKeyInfoFactory();
+		X509Data x509Data = keyInfoFactory
+				.newX509Data(Collections.singletonList(loadCertificate(keystoreAlias, ks, keystorePass)));
+		KeyInfo keyInfo = null;
+		keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data), sQualifyingPropertiesId);
+
+		return xmlSignatureFactory.newXMLSignature(signedInfo, keyInfo, null, "_" + UUID.randomUUID(), null);
+	}
+
+	public static void main(String[] args) throws Exception {
+		String xmlStringRaw = "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.002.001.11\">\r\n"
+				+ "	<FIToFIPmtStsRpt>\r\n"
+				+ "		<GrpHdr>\r\n"
+				+ "		\r\n"
+				+ "			<!-- <MsgId> - Unique ID to identify this message -->\r\n"
+				+ "			<MsgId>9928994f3b3748d0be12f41397743b76</MsgId>\r\n"
+				+ "			\r\n"
+				+ "			<!-- <CreDtTm> - Current datetime -->\r\n"
+				+ "			<CreDtTm>2021-04-22T11:37:18.277Z</CreDtTm>\r\n"
+				+ "			\r\n"
+				+ "			<!-- <InstgAgt> - Party that is instructing the next party to execute the request. This is the Originator PIC -->\r\n"
+				+ "			<InstgAgt>\r\n"
+				+ "				<FinInstnId>\r\n"
+				+ "					<Othr>\r\n"
+				+ "						<Id>0001</Id> \r\n"
+				+ "					</Othr>\r\n"
+				+ "				</FinInstnId>\r\n"
+				+ "			</InstgAgt>\r\n"
+				+ "			\r\n"
+				+ "			<!-- <InstdAgt> - Party that is instructed to execute the request. -->\r\n"
+				+ "			<!-- From Sender To IPS, this will be IPS PIC. From IPS to Participant, this will be Participant PIC -->\r\n"
+				+ "			<InstdAgt>\r\n"
+				+ "				<FinInstnId>\r\n"
+				+ "					<Othr>\r\n"
+				+ "						<Id>9999</Id> \r\n"
+				+ "					</Othr>\r\n"
+				+ "				</FinInstnId>\r\n"
+				+ "			</InstdAgt>\r\n"
+				+ "			\r\n"
+				+ "		</GrpHdr>\r\n"
+				+ "		\r\n"
+				+ "		<OrgnlGrpInfAndSts>\r\n"
+				+ "		\r\n"
+				+ "			<!-- Include this tag as presented in original message -->\r\n"
+				+ "			<OrgnlMsgId>88bf88ac736f4179bbf65b15eff54328</OrgnlMsgId> \r\n"
+				+ "			\r\n"
+				+ "			<!-- original message name e.g. pacs.008 -->\r\n"
+				+ "			<OrgnlMsgNmId>pacs.008</OrgnlMsgNmId> \r\n"
+				+ "			\r\n"
+				+ "			<!-- Include this tag as presented in original message -->\r\n"
+				+ "			<OrgnlCreDtTm>2021-04-22T11:37:16.234Z</OrgnlCreDtTm> \r\n"
+				+ "			\r\n"
+				+ "		</OrgnlGrpInfAndSts>\r\n"
+				+ "		\r\n"
+				+ "		<TxInfAndSts>\r\n"
+				+ "		\r\n"
+				+ "			<!--Is this  a random generated - yes - Your unique Reference to this message -->\r\n"
+				+ "			<StsId>5405e036ec2f47069d75f9e6af8a83aa</StsId>\r\n"
+				+ "			\r\n"
+				+ "			<!-- EndToEndId in original message -->\r\n"
+				+ "			<OrgnlEndToEndId>0001999920210422113716179hr9zz</OrgnlEndToEndId> \r\n"
+				+ "			\r\n"
+				+ "			<!-- <TxSts> tag holds ACCP on success and RJCT on failure/ transaction rejection -->\r\n"
+				+ "			<!-- Either -->\r\n"
+				+ "			<TxSts>RJCT</TxSts>\r\n"
+				+ "			<!-- OR -->\r\n"
+				+ "			<TxSts>ACCP</TxSts>\r\n"
+				+ "			\r\n"
+				+ "			<!-- <StsRsnInf> tag should only be provided in a RJCT scenario -->\r\n"
+				+ "			<StsRsnInf> \r\n"
+				+ "			\r\n"
+				+ "				<!-- Either -->\r\n"
+				+ "				<Orgtr>\r\n"
+				+ "					<Nm>Participant Name</Nm>\r\n"
+				+ "				</Orgtr>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Or -->\r\n"
+				+ "				<Orgtr>\r\n"
+				+ "					<Id>\r\n"
+				+ "						<OrgId>\r\n"
+				+ "							<Othr>\r\n"
+				+ "								<Id>0001</Id>\r\n"
+				+ "							</Othr>\r\n"
+				+ "						</OrgId>\r\n"
+				+ "					</Id>\r\n"
+				+ "				</Orgtr>\r\n"
+				+ "				\r\n"
+				+ "				<Rsn>\r\n"
+				+ "					<!-- Either - standard ISO reason -->\r\n"
+				+ "					<Cd>AC01</Cd>\r\n"
+				+ "					<!-- OR proprietary reason -->\r\n"
+				+ "					<Prtry>XT33</Prtry>\r\n"
+				+ "				</Rsn>\r\n"
+				+ "				\r\n"
+				+ "			</StsRsnInf>\r\n"
+				+ "			\r\n"
+				+ "			<AccptncDtTm>2021-04-22T11:37:16.432Z</AccptncDtTm>\r\n"
+				+ "			\r\n"
+				+ "			<!-- All tags under this are derived from the original message - Specifies key elements as defined in the original transaction -->\r\n"
+				+ "			<!-- Only include tags as presented in original message. If a tag is absent in original message, dont add it!!! -->\r\n"
+				+ "			<OrgnlTxRef> \r\n"
+				+ "			\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<IntrBkSttlmAmt Ccy=\"KES\">100</IntrBkSttlmAmt>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Same value as original message <AccptncDtTm> tag-->\r\n"
+				+ "				<ReqdExctnDt>\r\n"
+				+ "					<DtTm>2021-04-22T11:37:16.123Z</DtTm>\r\n"
+				+ "				</ReqdExctnDt>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<SttlmInf>\r\n"
+				+ "					<SttlmMtd>CLRG</SttlmMtd>\r\n"
+				+ "					<ClrSys>\r\n"
+				+ "						<Prtry>IPS</Prtry>\r\n"
+				+ "					</ClrSys>\r\n"
+				+ "				</SttlmInf>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<PmtTpInf>\r\n"
+				+ "					<SvcLvl>\r\n"
+				+ "						<Prtry>P2PT</Prtry>\r\n"
+				+ "					</SvcLvl>\r\n"
+				+ "					<LclInstrm>\r\n"
+				+ "						<Cd>INST</Cd>\r\n"
+				+ "					</LclInstrm>\r\n"
+				+ "					<CtgyPurp>\r\n"
+				+ "						<Prtry>IBNK</Prtry>\r\n"
+				+ "					</CtgyPurp>\r\n"
+				+ "				</PmtTpInf>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Only include this tag if present in original message -->\r\n"
+				+ "				<MndtRltdInf>\r\n"
+				+ "					<CdtTrfMndt>\r\n"
+				+ "						<MndtId>0001999920210422113716179hr9zz</MndtId>\r\n"
+				+ "					</CdtTrfMndt>\r\n"
+				+ "				</MndtRltdInf>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message. This tag is MANDATORY -->\r\n"
+				+ "				<RmtInf>\r\n"
+				+ "				\r\n"
+				+ "					<!-- <Ustrd> is a mandatory tag - contains transaction narration -->\r\n"
+				+ "					<Ustrd>KCB Bank Transfer</Ustrd>\r\n"
+				+ "					\r\n"
+				+ "					<!-- Strd/CdtrRefInf/Ref - Transaction reference number e.g. E-Citizen payment -->\r\n"
+				+ "					<Strd>\r\n"
+				+ "						<CdtrRefInf>\r\n"
+				+ "							<Ref>0011000120210504122043fb4d4aerq</Ref>\r\n"
+				+ "						</CdtrRefInf>\r\n"
+				+ "					</Strd>\r\n"
+				+ "					\r\n"
+				+ "				</RmtInf>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Only include this tag if present in original message -->\r\n"
+				+ "				<UltmtDbtr>\r\n"
+				+ "					<Pty>\r\n"
+				+ "						<Nm>Ultimate Debtor Name</Nm>\r\n"
+				+ "						<Id>\r\n"
+				+ "							<OrgId>\r\n"
+				+ "								<Othr>\r\n"
+				+ "									<Id>0001</Id>\r\n"
+				+ "								</Othr>\r\n"
+				+ "							</OrgId>\r\n"
+				+ "						</Id>\r\n"
+				+ "						<CtctDtls>\r\n"
+				+ "							<PhneNb>+254-718908314</PhneNb>\r\n"
+				+ "						</CtctDtls>\r\n"
+				+ "					</Pty>\r\n"
+				+ "				</UltmtDbtr>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<Dbtr>\r\n"
+				+ "					<Pty>\r\n"
+				+ "						<Nm>Debtor Name</Nm>\r\n"
+				+ "						<Id>\r\n"
+				+ "							<OrgId>\r\n"
+				+ "								<Othr>\r\n"
+				+ "									<Id>0001</Id>\r\n"
+				+ "								</Othr>\r\n"
+				+ "							</OrgId>\r\n"
+				+ "						</Id>\r\n"
+				+ "						<CtctDtls>\r\n"
+				+ "							<PhneNb>+254-718908314</PhneNb>\r\n"
+				+ "						</CtctDtls>\r\n"
+				+ "					</Pty>\r\n"
+				+ "				</Dbtr>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<DbtrAcct>\r\n"
+				+ "					<Id>\r\n"
+				+ "						<Othr>\r\n"
+				+ "							<Id>1145756190</Id>\r\n"
+				+ "						</Othr>\r\n"
+				+ "					</Id>\r\n"
+				+ "					<Nm>Debtor Name</Nm>\r\n"
+				+ "				</DbtrAcct>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<DbtrAgt>\r\n"
+				+ "					<FinInstnId>\r\n"
+				+ "						<Othr>\r\n"
+				+ "							<Id>0001</Id>\r\n"
+				+ "						</Othr>\r\n"
+				+ "					</FinInstnId>\r\n"
+				+ "				</DbtrAgt>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<CdtrAgt>\r\n"
+				+ "					<FinInstnId>\r\n"
+				+ "						<Othr>\r\n"
+				+ "							<Id>0001</Id>\r\n"
+				+ "						</Othr>\r\n"
+				+ "					</FinInstnId>\r\n"
+				+ "				</CdtrAgt>\r\n"
+				+ "				\r\n"
+				+ "				<!-- This tag must be present -->\r\n"
+				+ "				<Cdtr>\r\n"
+				+ "				\r\n"
+				+ "					<Pty>\r\n"
+				+ "					\r\n"
+				+ "						<!-- Update <Nm> with the creditor name -->\r\n"
+				+ "						<Nm>John Doe Walker</Nm> \r\n"
+				+ "						\r\n"
+				+ "						<!-- Creditor PIC -->\r\n"
+				+ "						<Id>\r\n"
+				+ "							<OrgId>\r\n"
+				+ "								<Othr>\r\n"
+				+ "									<Id>0001</Id>\r\n"
+				+ "								</Othr>\r\n"
+				+ "							</OrgId>\r\n"
+				+ "						</Id>\r\n"
+				+ "						\r\n"
+				+ "						<!-- Update <CtctDtls> with the creditor phone details -->\r\n"
+				+ "						<CtctDtls>  \r\n"
+				+ "							<PhneNb>+254-728107303</PhneNb>\r\n"
+				+ "						</CtctDtls>\r\n"
+				+ "						\r\n"
+				+ "					</Pty>\r\n"
+				+ "					\r\n"
+				+ "				</Cdtr>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<CdtrAcct>\r\n"
+				+ "					<Id>\r\n"
+				+ "						<Othr>\r\n"
+				+ "							<Id>254728107303</Id>\r\n"
+				+ "						</Othr>\r\n"
+				+ "					</Id>\r\n"
+				+ "					<Nm>John Doe Walker</Nm>\r\n"
+				+ "				</CdtrAcct>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Only include this tag if present in original message -->\r\n"
+				+ "				<UltmtCdtr>\r\n"
+				+ "					<Pty>\r\n"
+				+ "						<Nm>John Doe Walker</Nm>\r\n"
+				+ "						<Id>\r\n"
+				+ "							<OrgId>\r\n"
+				+ "								<Othr>\r\n"
+				+ "									<Id>0001</Id>\r\n"
+				+ "								</Othr>\r\n"
+				+ "							</OrgId>\r\n"
+				+ "						</Id>\r\n"
+				+ "						<CtctDtls>\r\n"
+				+ "							<PhneNb>+254-728107303</PhneNb>\r\n"
+				+ "						</CtctDtls>\r\n"
+				+ "					</Pty>\r\n"
+				+ "				</UltmtCdtr>\r\n"
+				+ "				\r\n"
+				+ "				<!-- Include this tag as presented in original message -->\r\n"
+				+ "				<Purp>\r\n"
+				+ "					<Prtry>100</Prtry>\r\n"
+				+ "				</Purp>\r\n"
+				+ "				\r\n"
+				+ "			</OrgnlTxRef>\r\n"
+				+ "			\r\n"
+				+ "		</TxInfAndSts>\r\n"
+				+ "	</FIToFIPmtStsRpt>\r\n"
+				+ "</Document>"
+				+ "";
+
+		String keystoreFile = "C:\\Users\\karna\\OneDrive\\Documents\\client-truststore.jks";
+		String keystorePass = "wso2carbon";
+		String keystoreAlias = "seal-cert";
+
+		System.out.println(sign(xmlStringRaw, keystoreFile, keystorePass, keystoreAlias));
+
+	}
+
+}

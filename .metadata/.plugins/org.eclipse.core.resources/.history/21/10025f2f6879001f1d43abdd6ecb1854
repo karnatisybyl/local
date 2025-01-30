@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/MainEmailApi" name="MainEmailApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <property expression="//From/text()" name="From" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Id']/text()" name="Id" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Subject']/text()" name="Subject" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Reference']/text()" name="Reference" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Recepient']/text()" name="Recepient" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Message']/text()" name="Message" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='SourceSystem']/text()" name="SourceSystem" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='MessageType']/text()" name="MessageType" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='AlertType']/text()" name="AlertType" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Status']/text()" name="Status" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='IsBodyHtml']/text()" name="IsBodyHtml" scope="default" type="BOOLEAN"/>
+            <property expression="//*[local-name()='Attachments']/text()" name="IsBodyHtml" scope="default" type="BOOLEAN"/>
+            <property expression="get-property(&quot;SYSTEM_DATE&quot;, &quot;yyyy-MM-dd'T'HH:mm:ss&quot;)" name="Timestamp" scope="default" type="STRING"/>
+            <call>
+                <endpoint>
+                    <http method="post" uri-template="http://localhost:8290/EmailApi">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>1</progressionFactor>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

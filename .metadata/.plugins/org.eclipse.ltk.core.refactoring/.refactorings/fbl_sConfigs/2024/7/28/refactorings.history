@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;fbl_sConfigs/src/main/synapse-config/local-entries/023AccountVrification.xml&apos; to &apos;023Verifyaccount.xml&apos;" description="Rename resource &apos;023AccountVrification.xml&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/synapse-config/local-entries/023AccountVrification.xml" name="023Verifyaccount.xml" stamp="1720779469986" updateReferences="true"/>
+</session>

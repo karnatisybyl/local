@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="DarajaFault_SEQ" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property expression="get-property('ERROR_CODE')" name="ERROR_CODE" scope="default" type="STRING"/>
+    <property expression="get-property('ERROR_MESSAGE')" name="ERROR_MESSAGE" scope="default" type="STRING"/>
+    <property expression="get-property('ERROR_DETAIL')" name="ERROR_DETAIL" scope="default" type="STRING"/>
+    <payloadFactory media-type="json">
+        <format>            {                "errorCode": "$1",                "errorMessage": "$2",                "errorDetail": "$3"            }        </format>
+        <args>
+            <arg evaluator="xml" expression="get-property('ERROR_CODE')"/>
+            <arg evaluator="xml" expression="get-property('ERROR_MESSAGE')"/>
+            <arg evaluator="xml" expression="get-property('ERROR_DETAIL')"/>
+        </args>
+    </payloadFactory>
+    <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <respond/>
+</sequence>

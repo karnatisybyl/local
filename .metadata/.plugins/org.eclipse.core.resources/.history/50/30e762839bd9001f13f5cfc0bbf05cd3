@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/mpesa/oauth" name="mpesa_oauth_api" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" url-mapping="/token">
+        <inSequence>
+            <!-- Store credentials in properties -->
+            <property name="consumerKey" scope="default" type="STRING" value="Gjxv1jQFnGQ5dNwEq2EXFOd8UdS6Mdum1NBmUbU4E4kEqJDU"/>
+            <property name="consumerSecret" scope="default" type="STRING" value="6AJ1RXaqMYdciAodB8dPfXhJb6T3J5XbfLDUaojM27nlS2nuqovSAJYndYLw6pri"/>
+            <!-- Combine credentials using concat and encode -->
+            <property expression="base64Encode(fn:concat(get-property('consumerKey'), ':', get-property('consumerSecret')))" name="base64Auth" scope="default" type="STRING"/>
+            <!-- Set Authorization header -->
+            <header expression="fn:concat('Basic ', get-property('base64Auth'))" name="Authorization" scope="transport"/>
+            <!-- Call M-Pesa OAuth endpoint -->
+            <call>
+                <endpoint>
+                    <http method="get" uri-template="https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>1</progressionFactor>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </http>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <filter regex="200" source="$axis2:HTTP_SC">
+                <then>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </then>
+                <else>
+                    <payloadFactory media-type="json">
+                        <format>
+                            {
+                                "error": true,
+                                "message": "Failed to generate token",
+                                "status": $1
+                            }
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="$axis2:HTTP_SC"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <respond/>
+                </else>
+            </filter>
+        </outSequence>
+        <faultSequence>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                        "error": true,
+                        "message": "An error occurred while processing the request"
+                    }
+                </format>
+                <args/>
+            </payloadFactory>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

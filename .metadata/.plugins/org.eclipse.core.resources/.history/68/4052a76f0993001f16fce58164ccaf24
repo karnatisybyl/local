@@ -1,0 +1,51 @@
+package ipsl.signature;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+
+public class SPAuthentication {
+	Encoder encoder = Base64.getEncoder();
+	String originalString = "basic";
+	String encodedString = encoder.encodeToString(originalString.getBytes());
+
+	System.out.println(encodedString);
+    // Method to generate spPassword
+    public static String generateSPPassword(String spId, String password, String timeStamp) throws NoSuchAlgorithmException {
+        // Concatenate spId, password, and timeStamp
+        String dataToEncrypt = spId + password + timeStamp;
+        System.out.println("Data to encrypt: " + dataToEncrypt);  // For debugging
+
+        // Perform SHA-256 hashing
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(dataToEncrypt.getBytes(StandardCharsets.UTF_8));
+
+        String spPassword = Base64.getEncoder().encodeToString(hash);
+        System.out.println("spPassword (Base64): " + spPassword);  // For debugging
+
+        Base64.Encoder encoder = Base64.getEncoder();
+        String spPasswordMime = encoder.encodeToString(hash.getBytes());
+        System.out.println("spPassword (Base64 MIME): " + spPasswordMime);
+
+        return spPassword;
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Sample values
+            String spId = "107031";
+            String password = "Safaricom123!";
+            String timeStamp = "20241025071745";  // Your specified timeStamp
+
+            System.out.println("Generated TimeStamp: " + timeStamp);
+
+            // Generate spPassword
+            String spPassword = generateSPPassword(spId, password, timeStamp);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+}

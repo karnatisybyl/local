@@ -1,0 +1,67 @@
+package ipsl.signature;
+
+public class Mpesabtc {
+
+    public static void main(String[] args) {
+        // Test input: simulate the property 'fcubs_req_env' value
+        String fcubsReqEnv = "<![CDATA[<FCUBS_REQ_ENV xmlns=\"http://fcubs.iflex.com/service/FCUBSRTService/CreateTransaction\"><FCUBS_HEADER><SOURCE>AL01U</SOURCE><UBSCOMP>FCUBS</UBSCOMP><USERID>AL01USRU</USERID><BRANCH>094</BRANCH><SERVICE>FCUBSRTService</SERVICE><OPERATION>CreateTransaction</OPERATION></FCUBS_HEADER><FCUBS_BODY><Transaction-Details-IO><XREF>RGV7UQA169-70365807</XREF><PRD>SMSP</PRD><BRN>094</BRN><TXNBRN>094</TXNBRN><TXNACC>094000023874</TXNACC><TXNCCY>KES</TXNCCY><TXNTRN>PYB</TXNTRN><OFFSETBRN>000</OFFSETBRN><OFFSETACC>A01040002</OFFSETACC><OFFSETCCY>KES</OFFSETCCY><OFFSETAMT>1000.00</OFFSETAMT><NARRATIVE> From 254703658077 katana Jacob Alias Code 156452</NARRATIVE></Transaction-Details-IO></FCUBS_BODY></FCUBS_REQ_ENV>]]>";
+
+     
+                // Generate the dynamic SOAP payload
+                String soapPayload = frameSOAPPayload(fcubsReqEnv);
+
+                // Print the generated SOAP payload for testing
+                System.out.println("Generated SOAP Payload: ");
+                System.out.println(soapPayload);
+
+                // URL of the backend service
+                String url = "http://172.16.10.239:8181/FCUBSRTService/FCUBSRTService";
+
+                try {
+                    // Send the SOAP request
+                    sendSOAPRequest(url, soapPayload);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Method to dynamically frame the SOAP payload based on input
+            private static String frameSOAPPayload(String fcubsReqEnv) {
+                return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                       "xmlns:typ=\"http://types.ws.gw.fcubs.iflex.com\">" +
+                       "   <soapenv:Header/>" +
+                       "   <soapenv:Body>" +
+                       "      <typ:CreateTransaction>" + fcubsReqEnv + "</typ:CreateTransaction>" +
+                       "   </soapenv:Body>" +
+                       "</soapenv:Envelope>";
+            }
+
+            // Method to send the SOAP request to the backend
+            private static void sendSOAPRequest(String urlString, String soapPayload) throws Exception {
+                // Create the URL object
+                URL url = new URL(urlString);
+
+                // Open a connection to the URL
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                // Set HTTP method to POST
+                conn.setRequestMethod("POST");
+
+                // Set headers for SOAP content
+                conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
+                conn.setRequestProperty("SOAPAction", "");
+
+                // Enable input and output streams
+                conn.setDoOutput(true);
+
+                // Write the SOAP payload to the output stream
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = soapPayload.getBytes("UTF-8");
+                    os.write(input, 0, input.length);
+                }
+
+                // Get the response code to confirm the request was successful
+                int responseCode = conn.getResponseCode();
+                System.out.println("HTTP Response Code: " + responseCode);
+            }
+        }

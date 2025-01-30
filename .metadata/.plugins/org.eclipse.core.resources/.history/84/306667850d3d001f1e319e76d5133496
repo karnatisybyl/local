@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/payInstalment" name="PayInstalmentAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="PayInstalmentFaultSequence" inSequence="PayInstalmentInSequence" methods="POST" outSequence="PayInstalmentOutSequence" url-mapping="/payinstalment"/>
+    <resource faultSequence="PayInstalmentFaultSequence" methods="POST" url-mapping="/partialpayoffApi">
+        <inSequence>
+            <property expression="json-eval($)" name="requestBody" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="json-eval($)" name="requestBody"/>
+            </log>
+            <validate cache-schema="true">
+                <schema key="partialpayOffShema"/>
+                <on-fail>
+                    <payloadFactory media-type="json">
+                        <format>{"Error":"$1",
+            "Error Details" : "$2"       }</format>
+                        <args>
+                            <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+                            <arg evaluator="xml" expression="$ctx:ERROR_DETAIL"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+                    <respond/>
+                </on-fail>
+            </validate>
+            <enrich>
+                <source clone="true" property="requestBody" type="property"/>
+                <target type="body"/>
+            </enrich>
+            <property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+            <property name="Content-Type" scope="axis2" type="STRING" value="application/soap+xml"/>
+            <property expression="//*[local-name()='sessionContext']/*[local-name()='BankCode']" name="bankCode" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='sessionContext']/*[local-name()='Channel']" name="channel" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='sessionContext']/*[local-name()='TransactionBranch']" name="transactionBranch" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='sessionContext']/*[local-name()='UserId']" name="userId" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='loanAccountId']" name="loanAccountId" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='savingsAccountId']" name="accountID" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='amount']" name="loanAcctAmount" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='penaltyMethod']" name="penaltyMethod" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='isInterestChargeAppliedTillDate']" name="isInterestChargeAppliedTillDate" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='rescheduleType']" name="rescheduleType" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='narrative']" name="narrative" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='flgInstallmentType']" name="flgInstallmentType" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='transactionType']" name="transactionType" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='extendedReferenceNoDTO']/*[local-name()='referenceId']" name="extRefNo1" scope="default" type="STRING"/>
+            <payloadFactory media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:con="http://context.app.fcr.iflex.com" xmlns:dto="http://dto.savings.deposit.app.fcr.iflex.com" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spi="http://spi.loans.app.fcr.iflex.com">
+                        <soapenv:Header/>
+                        <soapenv:Body>
+                            <spi:partialPayOff>
+                                <spi:sessionContext>
+                                    <con:bankCode>$1</con:bankCode>
+                                    <con:channel>$2</con:channel>
+                                    <con:transactionBranch>$3</con:transactionBranch>
+                                    <con:userId>$4</con:userId>
+                                </spi:sessionContext>
+                                <spi:loanAccountId>$5</spi:loanAccountId>
+                                <spi:accountID>$6</spi:accountID>
+                                <spi:loanAcctAmount>$7</spi:loanAcctAmount>
+                                <spi:penaltyMethod>$8</spi:penaltyMethod>
+                                <spi:isInterestChargeAppliedTillDate>$9</spi:isInterestChargeAppliedTillDate>
+                                <spi:rescheduleType>$10</spi:rescheduleType>
+                                <spi:narrative>$11</spi:narrative>
+                                <spi:flgInstallmentType>$12</spi:flgInstallmentType>
+                                <spi:transactionType>$13</spi:transactionType>
+                                <spi:extendedReferenceNoDTO>
+                                    <dto:extRefNo1>$14</dto:extRefNo1>
+                                    <dto:extRefNo2/>
+                                    <dto:extRefNo3/>
+                                    <dto:extRefNo4/>
+                                    <dto:refCustomerNo/>
+                                </spi:extendedReferenceNoDTO>
+                            </spi:partialPayOff>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('bankCode')"/>
+                    <arg evaluator="xml" expression="get-property('channel')"/>
+                    <arg evaluator="xml" expression="get-property('transactionBranch')"/>
+                    <arg evaluator="xml" expression="get-property('userId')"/>
+                    <arg evaluator="xml" expression="get-property('loanAccountId')"/>
+                    <arg evaluator="xml" expression="get-property('accountID')"/>
+                    <arg evaluator="xml" expression="get-property('loanAcctAmount')"/>
+                    <arg evaluator="xml" expression="get-property('penaltyMethod')"/>
+                    <arg evaluator="xml" expression="get-property('isInterestChargeAppliedTillDate')"/>
+                    <arg evaluator="xml" expression="get-property('rescheduleType')"/>
+                    <arg evaluator="xml" expression="get-property('narrative')"/>
+                    <arg evaluator="xml" expression="get-property('flgInstallmentType')"/>
+                    <arg evaluator="xml" expression="get-property('transactionType')"/>
+                    <arg evaluator="xml" expression="get-property('extRefNo1')"/>
+                </args>
+            </payloadFactory>
+            <log level="custom">
+                <property expression="$body" name="beforeEP"/>
+            </log>
+            <header description="SOAPAction" name="SOAPAction" scope="transport" value="set"/>
+            <call>
+                <endpoint key="LoanPayOff_EP"/>
+            </call>
+            <filter regex="200" source="get-property('HTTP_SC')">
+                <then>
+                    <log level="full">
+                        <property name="status" value="Success"/>
+                    </log>
+                    <call>
+                        <endpoint key="verification-report_EP"/>
+                    </call>
+                </then>
+                <else>
+                    <log level="full">
+                        <property name="status" value="Failed"/>
+                    </log>
+                </else>
+            </filter>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+    </resource>
+</api>

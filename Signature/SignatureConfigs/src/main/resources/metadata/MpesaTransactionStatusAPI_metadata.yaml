@@ -1,0 +1,11 @@
+---
+key: "MpesaTransactionStatusAPI-1.0.0"
+name : "MpesaTransactionStatusAPI"
+displayName : "MpesaTransactionStatusAPI"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/MpesaTransactionStatusAPI"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

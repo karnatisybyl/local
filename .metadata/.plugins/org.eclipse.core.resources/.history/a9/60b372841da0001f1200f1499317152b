@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extracting relevant properties from the payload -->
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <!-- Logging extracted properties -->
+            <log level="custom">
+                <property expression="get-property('CdtrNm')" name="CdtrNm"/>
+                <property expression="get-property('DbtrNm')" name="DbtrNm"/>
+                <property expression="get-property('InstdAmt')" name="InstdAmt"/>
+                <property expression="get-property('DbtrPhneNb')" name="DbtrPhneNb"/>
+                <property expression="get-property('CdtrPhneNb')" name="CdtrPhneNb"/>
+            </log>
+            <script language="js"><![CDATA[var CdtrNm = mc.getProperty("CdtrNm");
+        var DbtrNm = mc.getProperty("DbtrNm");
+        var InstdAmt = mc.getProperty("InstdAmt");]]></script>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

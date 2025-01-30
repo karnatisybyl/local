@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/emailvalidation" name="emailValidation" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/sendEmail">
+        <inSequence>
+            <!-- Return error message if validation fails -->
+            <property expression="json-eval($.from)" name="fromEmail" scope="default" type="STRING"/>
+            <property expression="json-eval($.to)" name="toEmail" scope="default" type="STRING"/>
+            <property expression="json-eval($.reference)" name="referenceEmail" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="json-eval($.from)" name="fromEmail"/>
+                <property expression="json-eval($.to)" name="toEmail"/>
+                <property expression="json-eval($.reference)" name="referenceEmail"/>
+            </log>
+            <script language="js"><![CDATA[function isValidEmail(email) {
+                        var emailRegex = /^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$/;
+                        return emailRegex.test(email);
+                    }
+
+                    var fromEmail = mc.getProperty('fromEmail');
+                    var toEmail = mc.getProperty('toEmail');
+                    var referenceEmail = mc.getProperty('referenceEmail');
+
+                    if (!isValidEmail(fromEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "from" email address: ' + fromEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else if (!isValidEmail(toEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "to" email address: ' + toEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else if (!isValidEmail(referenceEmail)) {
+                        mc.setProperty('INVALID_EMAIL', 'Invalid "reference" email address: ' + referenceEmail);
+                        mc.setProperty('ERROR_STATUS', 'true');
+                    } else {
+                        mc.setProperty('ERROR_STATUS', 'false');
+                    }]]></script>
+            <!-- Step 3: Check if any validation failed -->
+            <filter xpath="get-property('ERROR_STATUS') = 'true'">
+                <then>
+                    <log level="full">
+                        <property expression="get-property('INVALID_EMAIL')" name="ValidationError"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>{"error": "Invalid email address", "details": "$1"}</format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('INVALID_EMAIL')"/>
+                        </args>
+                    </payloadFactory>
+                    <respond/>
+                </then>
+                <else>
+                    <payloadFactory media-type="json">
+                        <format>{"message": "Email sent successfully"}</format>
+                        <args/>
+                    </payloadFactory>
+                    <respond/>
+                </else>
+            </filter>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+        <faultSequence>
+            <log level="full">
+                <property expression="get-property('ERROR_MESSAGE')" name="ERROR"/>
+            </log>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

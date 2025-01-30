@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extracting relevant properties from the payload -->
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <!-- Logging extracted properties -->
+            <log level="custom">
+                <property expression="get-property('CdtrNm')" name="CdtrNm"/>
+                <property expression="get-property('DbtrNm')" name="DbtrNm"/>
+                <property expression="get-property('InstdAmt')" name="InstdAmt"/>
+                <property expression="get-property('DbtrPhneNb')" name="DbtrPhneNb"/>
+                <property expression="get-property('CdtrPhneNb')" name="CdtrPhneNb"/>
+            </log>
+            <switch source="get-property('DbtrPhneNb')">
+                <case regex="^\+?254[0-9]{9}$">
+                    <log level="custom">
+                        <property expression="get-property('PHONE_NUMBER')" name="Validated Mobile Number"/>
+                    </log>
+                </case>
+                <default>
+                    <script language="js"><![CDATA[function formatMobileNumber(mobileNumber) {
+    var log = mc.getServiceLog();
+    mobileNumber = mobileNumber.trim();
+    if (!/^\d+$/.test(mobileNumber)) {
+    	log.info(mobileNumber);
+        return "Error: Mobile number must contain digits only.";
+    }
+    if (mobileNumber.startsWith('254')) {
+        if (mobileNumber.length !== 12) {
+            return "Error: Invalid mobile number length.";
+        }
+        return '+' + mobileNumber;
+    }
+    if (mobileNumber.startsWith('07') || mobileNumber.startsWith('01')) {
+        mobileNumber = '254' + mobileNumber.substring(1);
+    } else if (mobileNumber.startsWith('7') || mobileNumber.startsWith('1')) {
+        mobileNumber = '254' + mobileNumber;
+    } else {
+        return "Error: Mobile number must start with '254', '07', '01', '7', or '1'.";
+    }
+    if (mobileNumber.length !== 12) {
+        return "Error: Invalid mobile number length.";
+    }
+    log.info("Final Mobile: " + mobileNumber);
+    return '+' + mobileNumber;
+}
+var phone = formatMobileNumber(mc.getProperty("PHONE_NUMBER"));
+mc.setProperty("FormattedPhoneNumber", phone.toString());]]></script>
+                    <!-- Log the formatted mobile number or the error message -->
+                    <switch source="get-property('FormattedPhoneNumber')">
+                        <case regex="^\+?254[0-9]{9}$">
+                            <log level="custom">
+                                <property expression="get-property('FormattedPhoneNumber')" name="Valid Mobile Number"/>
+                            </log>
+                        </case>
+                        <default>
+                            <log level="custom">
+                                <property expression="get-property('FormattedPhoneNumber')" name="Error Message"/>
+                            </log>
+                            <payloadFactory media-type="json">
+                                <format>
+                                { "status": "FAILED", "description": "$1" }
+                                </format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('FormattedPhoneNumber')"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+                            <respond/>
+                        </default>
+                    </switch>
+                </default>
+            </switch>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

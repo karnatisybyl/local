@@ -1,0 +1,80 @@
+map_S_root_S_Envelope = function(){ 
+var outputsoapenv_Envelope={};
+
+outputsoapenv_Envelope =  {};
+outputsoapenv_Envelope.soapenv_Body =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_bankCode = inputroot.payInstalment.sessionContext.bankCode;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_channel = inputroot.payInstalment.sessionContext.channel;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_externalBatchNumber = inputroot.payInstalment.sessionContext.externalBatchNumber;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_externalReferenceNo = inputroot.payInstalment.sessionContext.externalReferenceNo;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_externalSystemAuditTrailNumber = inputroot.payInstalment.sessionContext.externalSystemAuditTrailNumber;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_localDateTimeText = inputroot.payInstalment.sessionContext.localDateTimeText;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_originalReferenceNo = inputroot.payInstalment.sessionContext.originalReferenceNo;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_overridenWarnings = inputroot.payInstalment.sessionContext.overridenWarnings;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_postingDateText = inputroot.payInstalment.sessionContext.postingDateText;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_reason =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_reason.con_comment = inputroot.payInstalment.sessionContext.reason.comment;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_reason.con_reasonCode = inputroot.payInstalment.sessionContext.reason.reasonCode;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_serviceCode = inputroot.payInstalment.sessionContext.serviceCode;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_sessionTicket = inputroot.payInstalment.sessionContext.sessionTicket;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_supervisorContext =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_supervisorContext.con_primaryPassword = inputroot.payInstalment.sessionContext.supervisorContext.primaryPassword;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_supervisorContext.con_userId = inputroot.payInstalment.sessionContext.supervisorContext.userId;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_transactionBranch = inputroot.payInstalment.sessionContext.transactionBranch;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_userId = inputroot.payInstalment.sessionContext.userId;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_userReferenceNumber = inputroot.payInstalment.sessionContext.userReferenceNumber;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_sessionContext.con_valueDateText = inputroot.payInstalment.sessionContext.valueDateText;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_loanAccountId = inputroot.payInstalment.loanAccountId;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_accountID = inputroot.payInstalment.accountID;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_loanAcctAmount = inputroot.payInstalment.loanAcctAmount;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_GLccyShortName = inputroot.payInstalment.GLccyShortName;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_narrative = inputroot.payInstalment.narrative;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_flgInstallmentType = inputroot.payInstalment.flgInstallmentType;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_transactionType = inputroot.payInstalment.transactionType;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO =  {};
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO.dto_extRefNo1 = inputroot.payInstalment.extendedReferenceNoDTO.extRefNo1;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO.dto_extRefNo2 = inputroot.payInstalment.extendedReferenceNoDTO.extRefNo2;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO.dto_extRefNo3 = inputroot.payInstalment.extendedReferenceNoDTO.extRefNo3;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO.dto_extRefNo4 = inputroot.payInstalment.extendedReferenceNoDTO.extRefNo4;
+outputsoapenv_Envelope.soapenv_Body.spi_payInstalment.spi_extendedReferenceNoDTO.dto_refCustomerNo = inputroot.payInstalment.extendedReferenceNoDTO.refCustomerNo;
+return outputsoapenv_Envelope;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

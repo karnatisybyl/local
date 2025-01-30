@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/validationApi" name="validationApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <!-- Extracting relevant properties from the payload -->
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='Nm']/text()" name="CdtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='Nm']/text()" name="DbtrNm" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='Amt']/*[local-name()='InstdAmt']/text()" name="InstdAmt" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Dbtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="DbtrPhneNb" scope="default" type="STRING"/>
+            <property expression="//*[local-name()='Cdtr']/*[local-name()='CtctDtls']/*[local-name()='PhneNb']/text()" name="CdtrPhneNb" scope="default" type="STRING"/>
+            <!-- Logging the extracted properties -->
+            <log level="custom">
+                <property expression="get-property('CdtrNm')" name="CdtrNm"/>
+                <property expression="get-property('DbtrNm')" name="DbtrNm"/>
+                <property expression="get-property('InstdAmt')" name="InstdAmt"/>
+                <property expression="get-property('DbtrPhneNb')" name="DbtrPhneNb"/>
+                <property expression="get-property('CdtrPhneNb')" name="CdtrPhneNb"/>
+            </log>
+            <script language="js"><![CDATA[var log = mc.getServiceLog();
+
+                // Function to format and validate mobile numbers
+                function formatMobileNumber(mobileNumber) {
+                    mobileNumber = mobileNumber.trim();
+                    if (!/^\d+$/.test(mobileNumber)) {
+                        return "Error: Mobile number must contain digits only.";
+                    }
+                    if (mobileNumber.startsWith('254')) {
+                        return '+' + mobileNumber;
+                    } else if (mobileNumber.startsWith('07') || mobileNumber.startsWith('01')) {
+                        mobileNumber = '254' + mobileNumber.substring(1);
+                    } else if (mobileNumber.startsWith('7') || mobileNumber.startsWith('1')) {
+                        mobileNumber = '254' + mobileNumber;
+                    } else {
+                        return "Error: Mobile number must start with '254', '07', '01', '7', or '1'.";
+                    }
+                    if (mobileNumber.length !== 12) {
+                        return "Error: Invalid mobile number length.";
+                    }
+                    return '+' + mobileNumber;
+                }
+
+                var validationErrors = [];
+
+                // Extracted values
+                var CdtrNm = mc.getProperty("CdtrNm");
+                var DbtrNm = mc.getProperty("DbtrNm");
+                var InstdAmt = mc.getProperty("InstdAmt");
+                var DbtrPhneNb = mc.getProperty("DbtrPhneNb");
+                var CdtrPhneNb = mc.getProperty("CdtrPhneNb");
+
+                // Validate Names and Amount
+                if (!CdtrNm || CdtrNm.trim() === "") {
+                    validationErrors.push("CdtrNm is null or empty.");
+                }
+                if (!DbtrNm || DbtrNm.trim() === "") {
+                    validationErrors.push("DbtrNm is null or empty.");
+                }
+                if (!InstdAmt || InstdAmt.trim() === "" || isNaN(InstdAmt)) {
+                    validationErrors.push("InstdAmt is not a valid number or is null/empty.");
+                }
+
+                // Validate Phone Numbers
+                var formattedDbtrPhone = formatMobileNumber(DbtrPhneNb);
+                var formattedCdtrPhone = formatMobileNumber(CdtrPhneNb);
+
+               // Check if phone formatting failed
+if (formattedDbtrPhone.indexOf("Error:") !== -1) {
+    validationErrors.push("DbtrPhneNb: " + formattedDbtrPhone);
+}
+if (formattedCdtrPhone.indexOf("Error:") !== -1) {
+    validationErrors.push("CdtrPhneNb: " + formattedCdtrPhone);
+}
+
+                // If errors exist, set them as the ValidationError property
+                if (validationErrors.length > 0) {
+                    mc.setProperty("ValidationError", validationErrors.join("; "));
+                } else {
+                    mc.setProperty("ValidationError", "Validation Passed");
+                }
+
+                log.info("Validation Errors: " + validationErrors.join("; "));]]></script>
+            <property expression="get-property('ValidationError')" name="ValidationError" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="get-property('ValidationError')" name="ValidationError"/>
+            </log>
+            <!-- Validation Response Handling -->
+            <filter xpath="starts-with(get-property('ValidationError'), 'Error:')">
+                <then>
+                    <log level="custom">
+                        <property expression="get-property('ValidationError')" name="ValidationError"/>
+                        <property name="Status" value="Validation Failed"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>
+                            { "status": "FAILED", "description": "$1" }
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('ValidationError')"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+                    <respond/>
+                </then>
+                <else>
+                    <log level="custom">
+                        <property expression="get-property('ValidationError')" name="ValidationError"/>
+                        <property name="Status" value="Validation Passed"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>
+                            { "status": "SUCCESS", "description": "$1" }
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('ValidationError')"/>
+                        </args>
+                    </payloadFactory>
+                    <respond/>
+                </else>
+            </filter>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

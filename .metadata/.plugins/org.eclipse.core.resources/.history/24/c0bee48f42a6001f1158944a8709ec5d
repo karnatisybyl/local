@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/cdata" name="cdata" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <property expression="$body//SOURCE" name="source" scope="default" type="STRING"/>
+            <property expression="$body//UBSCOMP" name="ubsComp" scope="default" type="STRING"/>
+            <property expression="$body//USERID" name="userId" scope="default" type="STRING"/>
+            <property expression="$body//BRANCH" name="branch" scope="default" type="STRING"/>
+            <property expression="$body//SERVICE" name="service" scope="default" type="STRING"/>
+            <property expression="$body//OPERATION" name="operation" scope="default" type="STRING"/>
+            <property expression="$body//XREF" name="xref" scope="default" type="STRING"/>
+            <property expression="$body//PRD" name="prd" scope="default" type="STRING"/>
+            <property expression="$body//TXNACC" name="txnAcc" scope="default" type="STRING"/>
+            <property expression="$body//TXNCCY" name="txnCcy" scope="default" type="STRING"/>
+            <property expression="$body//OFFSETAMT" name="offsetAmt" scope="default" type="STRING"/>
+            <property expression="$body//NARRATIVE" name="narrative" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="$body//SOURCE" name="source"/>
+                <property expression="$body//UBSCOMP" name="ubsComp"/>
+                <property expression="$body//USERID" name="userId"/>
+                <property expression="$body//BRANCH" name="branch"/>
+                <property expression="$body//SERVICE" name="service"/>
+                <property expression="$body//OPERATION" name="operation"/>
+                <property expression="$body//XREF" name="xref"/>
+                <property expression="$body//PRD" name="prd"/>
+                <property expression="$body//TXNACC" name="txnAcc"/>
+                <property expression="$body//TXNCCY" name="txnCcy"/>
+                <property expression="$body//OFFSETAMT" name="offsetAmt"/>
+                <property expression="$body//NARRATIVE" name="narrative"/>
+            </log>
+            <property name="source" scope="default" type="STRING" value="1234"/>
+            <payloadFactory media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://types.ws.gw.fcubs.iflex.com">
+                        <soapenv:Header/>
+                        <soapenv:Body>
+                            <typ:CreateTransaction><![CDATA[
+                    <FCUBS_REQ_ENV xmlns="http://fcubs.iflex.com/service/FCUBSRTService/CreateTransaction">
+                        <FCUBS_HEADER>
+                            <SOURCE>$1</SOURCE>
+                            <UBSCOMP>FCUBS</UBSCOMP>
+                            <USERID>AL01USRU</USERID>
+                            <BRANCH>094</BRANCH>
+                            <SERVICE>FCUBSRTService</SERVICE>
+                            <OPERATION>CreateTransaction</OPERATION>
+                        </FCUBS_HEADER>
+                        <FCUBS_BODY>
+                            <Transaction-Details-IO>
+                                <XREF>RGV7UQA169-70365807</XREF>
+                                <PRD>SMSP</PRD>
+                                <BRN>094</BRN>
+                                <TXNBRN>094</TXNBRN>
+                                <TXNACC>094000023874</TXNACC>
+                                <TXNCCY>KES</TXNCCY>
+                                <TXNTRN>PYB</TXNTRN>
+                                <OFFSETBRN>000</OFFSETBRN>
+                                <OFFSETACC>A01040002</OFFSETACC>
+                                <OFFSETCCY>KES</OFFSETCCY>
+                                <OFFSETAMT>1000.00</OFFSETAMT>
+                                <NARRATIVE>From 254703658077 katana Jacob Alias Code 156452</NARRATIVE>
+                            </Transaction-Details-IO>
+                        </FCUBS_BODY>
+                    </FCUBS_REQ_ENV>
+                    ]]></typ:CreateTransaction>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:source"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+            <log level="full"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,72 @@
+package org.example.email;
+
+
+
+public class EmailWithAttachmentsSender {
+
+    public static void main(String[] args) {
+        // Example usage
+        String recipient = "recipient@example.com";
+        String subject = "Sample Email with Attachments";
+        String messageBody = "This is the body of the email.";
+
+        // Example attachments (change file paths accordingly)
+        String[] attachmentPaths = new String[] {
+            "/path/to/attachment1.pdf",
+            "/path/to/attachment2.docx"
+        };
+
+        try {
+            // Prepare session properties for JavaMail API
+            Properties props = new Properties();
+            props.put("mail.smtp.host", "smtp.example.com"); // SMTP host
+            props.put("mail.smtp.port", "587"); // Port for SMTP
+            props.put("mail.smtp.auth", "true"); // Enable authentication
+            props.put("mail.smtp.starttls.enable", "true"); // Enable TLS
+
+            // Create a Session object with authentication
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication("your_email@example.com", "your_password");
+                }
+            });
+
+            // Create a MimeMessage object
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("your_email@example.com"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+
+            // Create the multipart message
+            Multipart multipart = new MimeMultipart();
+
+            // Create and add the text message part
+            BodyPart messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText(messageBody);
+            multipart.addBodyPart(messageBodyPart);
+
+            // Add attachments
+            if (attachmentPaths != null && attachmentPaths.length > 0) {
+                for (String filePath : attachmentPaths) {
+                    MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+                    DataSource source = new FileDataSource(filePath);
+                    attachmentBodyPart.setDataHandler(new DataHandler(source));
+                    attachmentBodyPart.setFileName(source.getName());
+                    multipart.addBodyPart(attachmentBodyPart);
+                }
+            }
+
+            // Set the content of the message to the multipart
+            message.setContent(multipart);
+
+            // Send the message
+            Transport.send(message);
+
+            System.out.println("Email sent successfully.");
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+}

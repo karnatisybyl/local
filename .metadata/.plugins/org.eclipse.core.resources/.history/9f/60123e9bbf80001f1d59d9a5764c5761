@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy name="btc" startOnLoad="true" transports="http https" xmlns="http://ws.apache.org/ns/synapse">
+    <target>
+        <inSequence>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </target>
+</proxy>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/test" name="test" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <class name="ipsl.signature.Test">
+                <property expression="//*[local-name()='Document']" name="XmlStringRaw"/>
+                <property name="keystoreFile" value="C:/Users/karna/OneDrive/Documents/client-truststore.jks"/>
+                <property name="keystorePass" value="wso2carbon"/>
+                <property name="keystoreAlias" value="seal-cert"/>
+            </class>
+            <!--    <class name="ipsl.signature.SSLTestClient">
+                <property expression="//*[local-name()='Document']" name="XmlStringRaw"/>
+                <property name="keystoreFile" value="C:/Users/karna/OneDrive/Documents/client-truststore.jks"/>
+                <property name="keystorePass" value="wso2carbon"/>
+                <property name="keystoreAlias" value="seal-cert"/>
+                 <property name="endpointUrl" value="https://reqres.in/api/users?page=2"/>
+                
+            </class>-->
+            <property expression="get-property('output')" name="response" scope="default" type="STRING"/>
+            <log level="custom">
+                <property expression="get-property('output')" name="response#############"/>
+            </log>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

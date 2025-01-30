@@ -1,0 +1,96 @@
+package ipsl.signature;
+
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.NoSuchAlgorithmException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.UnrecoverableKeyException;
+
+public class SSLTestClient {
+
+    private static final String keyStorePath = "C:\\Program Files\\OpenSSL-Win64\\bin\\wso2carbon.jks"; // Update with your keystore path
+    private static final String keyStorePassword = "wso2carbon"; // Update with your keystore password
+
+    public static void main(String[] args) {
+        try {
+            // Initialize HTTP client with SSL support
+            CloseableHttpClient httpClient = createHttpClientWithSSL();
+
+            // URL to send GET request (Replace with your test URL)
+            String testUrl = "https://api.stage.pesalink.co.ke/iso20022/sync/v1/verification-request"; // Update with your test URL
+            HttpGet request = new HttpGet(testUrl);
+
+            // Execute the request
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                // Print the response
+                System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+                System.out.println("Response Body: " + EntityUtils.toString(response.getEntity()));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to create an HTTP client with SSL configuration
+    private static CloseableHttpClient createHttpClientWithSSL()
+            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException, UnrecoverableKeyException {
+        char[] password = keyStorePassword.toCharArray();
+
+        // Load the keystore containing the transport certificate
+        FileInputStream fis = new FileInputStream(keyStorePath);
+        BufferedInputStream is = new BufferedInputStream(fis);
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(is, password);
+
+        // Set up SSL context
+        SSLContext sslContext = SSLContextBuilder
+                .create()
+                .loadKeyMaterial(ks, password)
+                .loadTrustMaterial(null, new TrustSelfSignedStrategy()) // Trust self-signed certs for testing
+                .build();
+
+        // Set up SSL connection socket factory
+        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+                sslContext,
+                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER // Allow all hostnames for testing
+        );
+
+        // Register both HTTP and HTTPS
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("https", sslSocketFactory)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+
+        // Set up the pooling connection manager
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        connectionManager.setMaxTotal(500);
+        connectionManager.setDefaultMaxPerRoute(150);
+
+        // Create and return the HTTP client
+        return HttpClients.custom()
+                .setSSLSocketFactory(sslSocketFactory)
+                .setConnectionManager(connectionManager)
+                .build();
+    }
+}

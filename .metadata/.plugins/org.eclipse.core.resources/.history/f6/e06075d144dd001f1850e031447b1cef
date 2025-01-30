@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/daraja/b2b" name="B2B" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="full">
+                <property name="daraja_B2B_API" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag" scope="default" type="STRING"/>
+            <sequence key="DarajaPAin001_SEQ"/>
+            <log level="custom">
+                <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag"/>
+            </log>
+            <filter xpath="$ctx:cbsFlag = 'RTGS'">
+                <then>
+                    <sequence key="DarajaCoreTransaction_SEQ"/>
+                    <log level="full">
+                        <property name="BEFOREEP" value="BEFOREEP"/>
+                    </log>
+                    <call>
+                        <endpoint key="darajaRT_EP"/>
+                    </call>
+                    <log level="full">
+                        <property name="AFTEREP" value="AFTEREP"/>
+                    </log>
+                </then>
+                <else>
+                    <call>
+                        <endpoint>
+                            <http method="get" uri-template="http://localhost:8290/daraja/oauth/token">
+                                <suspendOnFailure>
+                                    <initialDuration>1000</initialDuration>
+                                    <progressionFactor>2</progressionFactor>
+                                    <maximumDuration>60000</maximumDuration>
+                                </suspendOnFailure>
+                                <markForSuspension>
+                                    <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                                    <retryDelay>1000</retryDelay>
+                                </markForSuspension>
+                            </http>
+                        </endpoint>
+                    </call>
+                    <property expression="json-eval($.access_token)" name="access_token" scope="default" type="STRING"/>
+                    <property name="Bearer" scope="default" type="STRING" value="Bearer"/>
+                    <property name="mpesa.initiator" scope="default" type="STRING" value="testapi"/>
+                    <property name="mpesa.security.credential" scope="default" type="STRING" value="Jj5pMgosk7T4cHvYWDsrnjWqP/l5u+xREtm+HrPy8YbdoX8uAAwh+J1b9nmL1W7fIZyqacVixqul3zji6r6431E3BRsXwwAUvEleb+nIjMq4pq1GpMaVLqtQ1MRZsskRPACkAWK9VG7MEOplOe4BUNMMQ9jnBlqsj+Ukc/06ujYwwixD+WmKGf5SiOHpighYXUJr+Wx8bTM93uauYewQIEyjFVOhOatu9go5T1CJXb/+WlwRujlfWckdFsJ0KYp6KYNHzvgyXIhwu/uLvXWuldV3RBxlP9CLXFmhvbX+GVHUq0lh9pWxd9+yNBxUkU8M/CaZ68RPQRAwxqm+NRj6+g=="/>
+                    <property name="mpesa.command.id" scope="default" type="STRING" value="BusinessPayBill"/>
+                    <property name="mpesa.sender.type" scope="default" type="STRING" value="4"/>
+                    <property name="mpesa.receiver.type" scope="default" type="STRING" value="4"/>
+                    <property name="Amount" scope="default" type="STRING" value="1"/>
+                    <property name="Remarks" scope="default" type="STRING" value="ok"/>
+                    <property name="mpesa.party.a" scope="default" type="STRING" value="600988"/>
+                    <property name="mpesa.party.b" scope="default" type="STRING" value="600000"/>
+                    <property name="mpesa.account.ref" scope="default" type="STRING" value="353353"/>
+                    <property name="mpesa.requester" scope="default" type="STRING" value="254708374149"/>
+                    <property name="mpesa.queue.timeout.url" scope="default" type="STRING" value="https://surveys.familybank.co.ke/api/daraja/callback/1.0/getDarajaB2bResult"/>
+                    <property name="mpesa.result.url" scope="default" type="STRING" value="https://surveys.familybank.co.ke/api/daraja/callback/1.0/getDarajaB2bResult"/>
+                    <payloadFactory media-type="json">
+                        <format>
+                            {
+                                "Initiator": "$1",
+                                "SecurityCredential": "$2",
+                                "CommandID": "$3",
+                                "SenderIdentifierType": "$4",
+                                "RecieverIdentifierType": "$5",
+                                "Amount": $6,
+                                "PartyA": $7,
+                                "PartyB": $8,
+                                "AccountReference": $9,
+                                "Requester": $10,
+                                "Remarks": "$11",
+                                "QueueTimeOutURL": "$12",
+                                "ResultURL": "$13"
+                            }
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="get-property('mpesa.initiator')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.security.credential')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.command.id')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.sender.type')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.receiver.type')"/>
+                            <arg evaluator="xml" expression="get-property('Amount')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.party.a')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.party.b')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.account.ref')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.requester')"/>
+                            <arg evaluator="xml" expression="get-property('Remarks')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.queue.timeout.url')"/>
+                            <arg evaluator="xml" expression="get-property('mpesa.result.url')"/>
+                        </args>
+                    </payloadFactory>
+                    <log level="custom">
+                        <property name="Message" value="=== B2B Payment Request ==="/>
+                        <property expression="json-eval($)" name="Payload"/>
+                    </log>
+                    <header expression="fn:concat(get-property('Bearer'),' ', get-property('access_token'))" name="Authorization" scope="transport"/>
+                    <call>
+                        <endpoint>
+                            <http method="post" uri-template="https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest">
+                                <suspendOnFailure>
+                                    <initialDuration>1000</initialDuration>
+                                    <progressionFactor>2</progressionFactor>
+                                    <maximumDuration>60000</maximumDuration>
+                                </suspendOnFailure>
+                                <markForSuspension>
+                                    <retriesBeforeSuspension>3</retriesBeforeSuspension>
+                                    <retryDelay>1000</retryDelay>
+                                </markForSuspension>
+                            </http>
+                        </endpoint>
+                    </call>
+                    <property expression="json-eval($)" name="mpesa.response" scope="default" type="STRING"/>
+                    <filter regex="200" source="$axis2:HTTP_SC">
+                        <then>
+                            <log level="custom">
+                                <property name="Message" value="=== B2B Payment Success ==="/>
+                                <property expression="get-property('mpesa.response')" name="Response"/>
+                            </log>
+                        </then>
+                        <else>
+                            <log level="custom">
+                                <property name="Message" value="=== B2B Payment Failed ==="/>
+                                <property expression="get-property('mpesa.response')" name="ErrorResponse"/>
+                            </log>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+                            <payloadFactory media-type="json">
+                                <format>
+                                    {
+                                        "status": "error",
+                                        "message": "B2B Payment Failed",
+                                        "response": $1
+                                    }
+                                </format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('mpesa.response')"/>
+                                </args>
+                            </payloadFactory>
+                        </else>
+                    </filter>
+                </else>
+            </filter>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="DarajaFault_SEQ"/>
+        </faultSequence>
+    </resource>
+</api>

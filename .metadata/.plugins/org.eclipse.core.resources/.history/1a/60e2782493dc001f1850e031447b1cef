@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/daraja/b2b" name="B2B" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="full">
+                <property name="daraja_B2B_API" value=":::::::::::::::::::::::START::::::::::::"/>
+            </log>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag" scope="default" type="STRING"/>
+            <sequence key="DarajaPAin001_SEQ"/>
+            <log level="custom">
+                <property expression="//*[local-name()='CdtTrfTxInf']/*[local-name()='PmtTpInf']/*[local-name()='LclInstrm']/*[local-name()='Cd']/text()" name="cbsFlag"/>
+            </log>
+            <filter xpath="$ctx:cbsFlag = 'RTGS'">
+                <then>
+                    <sequence key="DarajaCoreTransaction_SEQ"/>
+                </then>
+                <else/>
+            </filter>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <sequence key="DarajaFault_SEQ"/>
+        </faultSequence>
+    </resource>
+</api>

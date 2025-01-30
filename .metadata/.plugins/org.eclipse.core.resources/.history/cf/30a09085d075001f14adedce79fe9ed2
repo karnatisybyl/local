@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>wso2.sampleJMSProxyTemplate</groupId>
+    <artifactId>jms</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>s</groupId>
+  <artifactId>pp</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+  <name>pp</name>
+  <description>pp</description>
+  <properties>
+    <CApp.type>lib/synapse/mediator</CApp.type>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.synapse</groupId>
+      <artifactId>synapse-core</artifactId>
+      <version>2.1.7-wso2v227</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.axis2.wso2</groupId>
+      <artifactId>axis2</artifactId>
+      <version>1.6.1-wso2v63</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+
+        <!-- Apache XML Security for XML Signature -->
+<dependency>
+  <groupId>jakarta.activation</groupId>
+  <artifactId>jakarta.activation-api</artifactId>
+  <version>2.1.1</version>
+</dependency>
+<dependency>
+    <groupId>jakarta.xml.bind</groupId>
+    <artifactId>jakarta.xml.bind-api</artifactId>
+    <version>4.0.2</version>
+</dependency>
+<dependency>
+    <groupId>com.sun.xml.bind</groupId>
+    <artifactId>jaxb-impl</artifactId>
+    <version>4.0.4</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.santuario</groupId>
+    <artifactId>xmlsec</artifactId>
+    <version>2.1.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.santuario/xmlsec -->
+
+
+
+         <!-- Apache Santuario (XML Security for Java) -->
+    
+
+    <!-- Java XML Cryptography API -->
+  
+
+    <!-- (Optional) Logging dependencies for better debugging -->
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.36</version> <!-- or latest version -->
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>1.7.36</version> <!-- or latest version -->
+    </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.synapse/synapse-core -->
+<dependency>
+    <groupId>org.apache.synapse</groupId>
+    <artifactId>synapse-core</artifactId>
+    <version>2.0.0</version>
+</dependency>
+        <dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.5.13</version> <!-- Use the latest version -->
+</dependency>
+        
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+    </dependencies>
+    
+  </dependencies>
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>ignore</checksumPolicy>
+      </releases>
+      <id>wso2-nexus</id>
+      <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>ignore</checksumPolicy>
+      </releases>
+      <id>wso2-nexus</id>
+      <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.3.4</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>pp</Bundle-SymbolicName>
+            <Bundle-Name>pp</Bundle-Name>
+            <Export-Package>s</Export-Package>
+            <DynamicImport-Package>*</DynamicImport-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <buildcommands>
+            <buildcommand>org.eclipse.jdt.core.javabuilder</buildcommand>
+          </buildcommands>
+          <projectnatures>
+            <projectnature>org.wso2.developerstudio.eclipse.artifact.mediator.project.nature</projectnature>
+            <projectnature>org.eclipse.jdt.core.javanature</projectnature>
+          </projectnatures>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,5 @@
+1721048871901	Delete resource 'fbl_sConfigs/src/main/synapse-config/templates/IPSL.xml'
+1721049770694	Delete resource 'fbl_sConfigs/src/main/synapse-config/templates/DynamicEP.xml'
+1721114022452	Delete resource 'fbl_sConfigs/src/main/synapse-config/endpoints/DynamicIPSLEP.xml'
+1721221923012	Delete resource 'fbl_sConfigs/src/main/synapse-config/endpoints/AccountVerification_EP.xml'
+1721301103001	Delete resource 'SampleServicesConfigs/src/main/synapse-config/api/verifyAccount.xml'

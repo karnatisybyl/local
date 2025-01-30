@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/internal-duplicate-check-api" name="Internal_Duplicate_Check_API" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <log level="custom">
+                <property name="Start of duplicate check" value="Begin Alerts SMS API Duplicate Check"/>
+                <property expression="json-eval($)" name="Payload"/>
+            </log>
+            <enrich>
+                <source clone="false" type="body"/>
+                <target property="PAYLOAD" type="property"/>
+            </enrich>
+            <log level="full"/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

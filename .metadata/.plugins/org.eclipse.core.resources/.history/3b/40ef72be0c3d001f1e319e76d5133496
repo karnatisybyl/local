@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="PayInstalmentFaultSequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log description="FAULT_SEQUENCE_LOG" level="custom">
+        <property name="FAULT_SEQUENCE_LOG" value="Executing Fault Sequence"/>
+    </log>
+    <payloadFactory media-type="json">
+        <format>
+                    {
+                        "errorCode": "500",
+                        "errorDesc": "Internal Server Error",
+                        "errorMsg": "Faulty Payload"
+                    }
+                </format>
+        <args/>
+    </payloadFactory>
+    <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+    <respond/>
+</sequence>

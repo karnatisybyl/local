@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/payInstalment" name="PayInstalmentAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="custom_fault_sequence" methods="POST" url-mapping="/PartialPayoffAPI">
+        <inSequence>
+            <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+            <property expression="//Envelope/Body/partialPayOff/sessionContext/bankCode/text()" name="bankCode" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/sessionContext/channel/text()" name="channel" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/sessionContext/transactionBranch/text()" name="transactionBranch" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/sessionContext/userId/text()" name="userId" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/loanAccountId/text()" name="loanAccountId" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/accountID/text()" name="accountID" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/loanAcctAmount/text()" name="loanAcctAmount" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/penaltyMethod/text()" name="penaltyMethod" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/isInterestChargeAppliedTillDate/text()" name="isInterestChargeAppliedTillDate" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/rescheduleType/text()" name="rescheduleType" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/narrative/text()" name="narrative" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/flgInstallmentType/text()" name="flgInstallmentType" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/transactionType/text()" name="transactionType" scope="default" type="STRING"/>
+            <property expression="//Envelope/Body/partialPayOff/extendedReferenceNoDTO/refCustomerNo/text()" name="refCustomerNo" scope="default" type="STRING"/>
+            <!-- Logging for debugging -->
+            <log level="custom">
+                <property expression="get-property('method')" name="RequestMethod"/>
+                <property expression="get-property('url')" name="RequestURL"/>
+                <property expression="get-property('Authorization')" name="Authorization"/>
+                <property expression="get-property('Content-Type')" name="ContentType"/>
+                <property expression="get-property('Accept')" name="Accept"/>
+                <property expression="get-property('bankCode')" name="bankCode"/>
+                <property expression="get-property('channel')" name="channel"/>
+                <property expression="get-property('transactionBranch')" name="transactionBranch"/>
+                <property expression="get-property('userId')" name="userId"/>
+                <property expression="get-property('loanAccountId')" name="loanAccountId"/>
+                <property expression="get-property('accountID')" name="accountID"/>
+                <property expression="get-property('loanAcctAmount')" name="loanAcctAmount"/>
+                <property expression="get-property('penaltyMethod')" name="penaltyMethod"/>
+                <property expression="get-property('isInterestChargeAppliedTillDate')" name="isInterestChargeAppliedTillDate"/>
+                <property expression="get-property('rescheduleType')" name="rescheduleType"/>
+                <property expression="get-property('narrative')" name="narrative"/>
+                <property expression="get-property('flgInstallmentType')" name="flgInstallmentType"/>
+                <property expression="get-property('transactionType')" name="transactionType"/>
+                <property expression="get-property('refCustomerNo')" name="refCustomerNo"/>
+            </log>
+            <!-- Payload Factory to transform the incoming request to the target service format -->
+            <payloadFactory media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:con="http://context.app.fcr.iflex.com" xmlns:dto="http://dto.savings.deposit.app.fcr.iflex.com" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spi="http://spi.loans.app.fcr.iflex.com">
+                        <soapenv:Header/>
+                        <soapenv:Body>
+                            <spi:partialPayOff>
+                                <spi:sessionContext>
+                                    <con:bankCode>$1</con:bankCode>
+                                    <con:channel>$2</con:channel>
+                                    <con:transactionBranch>$3</con:transactionBranch>
+                                    <con:userId>$4</con:userId>
+                                </spi:sessionContext>
+                                <spi:loanAccountId>$5</spi:loanAccountId>
+                                <spi:accountID>$6</spi:accountID>
+                                <spi:loanAcctAmount>$7</spi:loanAcctAmount>
+                                <spi:penaltyMethod>$8</spi:penaltyMethod>
+                                <spi:isInterestChargeAppliedTillDate>$9</spi:isInterestChargeAppliedTillDate>
+                                <spi:rescheduleType>$10</spi:rescheduleType>
+                                <spi:narrative>$11</spi:narrative>
+                                <spi:flgInstallmentType>$12</spi:flgInstallmentType>
+                                <spi:transactionType>$13</spi:transactionType>
+                                <spi:extendedReferenceNoDTO>
+                                    <dto:refCustomerNo>$14</dto:refCustomerNo>
+                                </spi:extendedReferenceNoDTO>
+                            </spi:partialPayOff>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('bankCode')"/>
+                    <arg evaluator="xml" expression="get-property('channel')"/>
+                    <arg evaluator="xml" expression="get-property('transactionBranch')"/>
+                    <arg evaluator="xml" expression="get-property('userId')"/>
+                    <arg evaluator="xml" expression="get-property('loanAccountId')"/>
+                    <arg evaluator="xml" expression="get-property('accountID')"/>
+                    <arg evaluator="xml" expression="get-property('loanAcctAmount')"/>
+                    <arg evaluator="xml" expression="get-property('penaltyMethod')"/>
+                    <arg evaluator="xml" expression="get-property('isInterestChargeAppliedTillDate')"/>
+                    <arg evaluator="xml" expression="get-property('rescheduleType')"/>
+                    <arg evaluator="xml" expression="get-property('narrative')"/>
+                    <arg evaluator="xml" expression="get-property('flgInstallmentType')"/>
+                    <arg evaluator="xml" expression="get-property('transactionType')"/>
+                    <arg evaluator="xml" expression="get-property('refCustomerNo')"/>
+                </args>
+            </payloadFactory>
+            <log level="custom">
+                <property expression="$body" name="beforeEP"/>
+            </log>
+            <!-- Set HTTP headers -->
+            <!-- Make the dynamic call to the target service -->
+            <!--    <call>
+                <endpoint>
+                    <http method="get-property('method')" uri-template="get-property('url')"/>
+                </endpoint>
+            </call>
+
+            <filter regex="200" source="get-property('axis2', 'HTTP_SC')">
+                <then/>
+                <else>
+                    <payloadFactory media-type="json">
+                        <format>
+                            {
+                                "errorCode": "$1",
+                                "errorDesc": "$2",
+                                "errorMsg": "$3"
+                            }
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="//*[local-name()='errorCode']"/>
+                            <arg evaluator="xml" expression="//*[local-name()='message']"/>
+                            <arg evaluator="xml" expression="//*[local-name()='faultstring']"/>
+                        </args>
+                    </payloadFactory>
+                </else>
+            </filter>-->
+            <!-- Set the response content type to JSON -->
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property name="Content-Type" scope="axis2" type="STRING" value="application/json"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+    </resource>
+</api>
